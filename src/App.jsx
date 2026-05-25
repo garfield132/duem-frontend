@@ -160,6 +160,7 @@ export default function App() {
   const [hov, setHov] = useState(null)
   const [form, setForm] = useState({ customer_name:'', phone:'', booking_date:'', booking_time:'', people_count:'' })
   const [step, setStep] = useState('map')
+  const [admin, setAdmin] = useState(false)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -315,7 +316,22 @@ export default function App() {
         </div>
         <nav style={{ display:'flex', background:'rgba(255,255,255,0.04)', borderRadius:6, padding:3, gap:2 }}>
           {[['map','Floor Plan'],['list','Bookings']].map(([s,l]) => (
-            <button key={s} onClick={() => setStep(s)} style={{
+            <button key={s} onClick={() => {
+
+  if (s === 'list' && !admin) {
+
+    const pass = prompt('Admin Password')
+
+    if (pass !== 'duem2026') {
+      alert('Wrong Password')
+      return
+    }
+
+    setAdmin(true)
+  }
+
+  setStep(s)
+}} style={{
               padding:'5px 14px', borderRadius:4, border:'none', cursor:'pointer',
               fontFamily:'inherit', fontSize:11, fontWeight:600, letterSpacing:0.6,
               background: step===s ? '#b83228' : 'transparent',
