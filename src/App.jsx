@@ -907,10 +907,7 @@ export default function App() {
               boxShadow:loading||!selected?'none':'0 4px 20px rgba(184,50,40,0.42)',
               transition:'all 0.2s',
             }}>{loading?'กำลังจอง...':'ยืนยันการจอง'}</button>
-          </div>
-        </div>
-      )}
-      {/* หมายเหตุ */}
+            {/* หมายเหตุ */}
 <div
   style={{
     marginTop: 22,
@@ -1004,6 +1001,10 @@ export default function App() {
     ))}
   </div>
 </div>
+          </div>
+        </div>
+      )}
+    
       {/* ── LIST VIEW (admin only) ── */}
       {step==='list'&&(
         <div style={{flex:1,overflow:'auto',padding:'20px 16px'}}>
