@@ -165,6 +165,20 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+
+useEffect(() => {
+
+  const handleResize = () => {
+    setIsMobile(window.innerWidth <= 768)
+  }
+
+  window.addEventListener('resize', handleResize)
+
+  return () => window.removeEventListener('resize', handleResize)
+
+}, [])
+
   useEffect(() => {
     fetchBookings()
     fetchBarTables()
@@ -292,9 +306,9 @@ export default function App() {
   }
 
   const inp = {
-    width:'100%', height:42, padding:'0 14px', borderRadius:6,
+    width:'100%', height:isMobile ? 48 : 42, padding:'0 14px', borderRadius:6,
     border:'1px solid rgba(255,255,255,0.08)', background:'rgba(255,255,255,0.04)',
-    color:'#fff', fontSize:13, fontFamily:'inherit', boxSizing:'border-box', outline:'none',
+    color:'#fff', fontSize:isMobile ? 16 : 13, fontFamily:'inherit', boxSizing:'border-box', outline:'none',
     transition:'border 0.18s, background 0.18s',
   }
 
@@ -346,7 +360,7 @@ export default function App() {
 
   {/* DESKTOP MENU */}
   <nav style={{
-    display: window.innerWidth > 768 ? 'flex' : 'none',
+    display: isMobile ? 'none' : 'flex',
     background:'rgba(255,255,255,0.04)',
     borderRadius:6,
     padding:3,
@@ -393,7 +407,7 @@ export default function App() {
   <button
     onClick={() => setMenuOpen(!menuOpen)}
     style={{
-      display: window.innerWidth <= 768 ? 'flex' : 'none',
+      display: isMobile ? 'flex' : 'none',
       flexDirection:'column',
       justifyContent:'center',
       gap:4,
@@ -500,9 +514,20 @@ export default function App() {
             </div>
           </div>
 
-          <div style={{ flex:1, overflow:'auto', background:'#1a1008' }}>
+          <div style={{
+  flex:1,
+  overflow:'auto',
+  background:'#1a1008',
+  WebkitOverflowScrolling:'touch',
+  padding:isMobile ? 6 : 0
+}}>
             <div style={{ display:'inline-block', padding:14 }}>
-              <svg width="650" height="600" style={{ display:'block' }}>
+              <svg
+  viewBox="0 0 650 600"
+  width={isMobile ? '100%' : '650'}
+  height="auto"
+  style={{ display:'block' }}
+>
                 <defs>
                   <pattern id="wood" x="0" y="0" width="48" height="9" patternUnits="userSpaceOnUse">
                     <rect width="48" height="9" fill="#2a1e10"/>
@@ -576,8 +601,10 @@ export default function App() {
 
           {selected && (
             <div style={{
-              flexShrink:0, height:56, display:'flex', alignItems:'center',
-              justifyContent:'space-between', padding:'0 16px',
+              flexShrink:0, minHeight:isMobile ? 82 : 56, display:'flex', alignItems:'center',
+              justifyContent:'space-between',flexDirection:isMobile ? 'column' : 'row',
+alignItems:isMobile ? 'stretch' : 'center',
+gap:isMobile ? 10 : 0, padding:isMobile ? '10px 14px' : '0 16px',
               background:'#0a0000', borderTop:'1px solid rgba(184,50,40,0.28)',
             }}>
               <div style={{ display:'flex', alignItems:'center', gap:12 }}>
@@ -619,7 +646,7 @@ export default function App() {
       {/* FORM VIEW */}
       {step==='form' && (
         <div style={{ flex:1, overflow:'auto', display:'flex', flexDirection:'column', alignItems:'center', padding:'26px 20px 60px' }}>
-          <div style={{ width:'100%', maxWidth:380 }}>
+          <div style={{ width:'100%', maxWidth:isMobile ? '100%' : 380 }}>
             <button onClick={() => setStep('map')} style={{
               background:'none', border:'none', color:'rgba(255,255,255,0.25)', fontSize:11,
               cursor:'pointer', fontFamily:'inherit', padding:0, marginBottom:20,
@@ -673,7 +700,7 @@ export default function App() {
               )}
             </div>
             <button onClick={handleSubmit} disabled={loading} style={{
-              width:'100%', height:42, borderRadius:6, border:'none',
+              width:'100%', height:isMobile ? 50 : 42, borderRadius:6, border:'none',
               background: loading ? 'rgba(100,25,20,0.45)' : '#b83228',
               color:'#fff', fontSize:13, fontWeight:700,
               cursor: loading?'not-allowed':'pointer',
