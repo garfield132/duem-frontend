@@ -707,13 +707,13 @@ export default function App() {
                   </pattern>
                 </defs>
                 <rect width="650" height="616" fill="url(#wood)"/>
-                <rect x="36" y="330" width="450" height="130" fill="url(#tile)"/>
-                <rect x="36" y="470" width="335" height="76" fill="url(#cfloor)"/>
-                <line x1="36" y1="330" x2="488" y2="330" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="4,4"/>
-                <line x1="36" y1="470" x2="374" y2="470" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="4,4"/>
+                <rect x="36" y="330" width="380" height="130" fill="url(#tile)"/>
+                <rect x="36" y="470" width="290" height="76" fill="url(#cfloor)"/>
+                <line x1="36" y1="330" x2="420" y2="330" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="4,4"/>
+                <line x1="36" y1="470" x2="330" y2="470" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="4,4"/>
                 <text x="36" y="200" fontSize="8" fontWeight="700" fill="rgba(255,255,255,0.1)" letterSpacing="2" transform="rotate(-90 36 210)">ZONE A</text>
                 <text x="36" y="410" fontSize="8" fontWeight="700" fill="rgba(255,255,255,0.1)" letterSpacing="2" transform="rotate(-90 36 420)">ZONE B</text>
-                <text x="36" y="552" fontSize="8" fontWeight="700" fill="rgba(255,255,255,0.1)" letterSpacing="2" transform="rotate(-90 36 562)">ZONE C</text>
+                <text x="70" y="552" fontSize="8" fontWeight="700" fill="rgba(255,255,255,0.1)" letterSpacing="2" transform="rotate(-90 36 562)">ZONE C</text>
                 <text x="550" y="260" textAnchor="middle" fontSize="8" fontWeight="700" fill="rgba(255,255,255,0.1)" letterSpacing="2">ZONE D</text>
                 <rect x="160" y="14" width="275" height="60" rx="4" fill="#3a2c04" stroke="#4e3e08" strokeWidth="1"/>
                 <rect x="162" y="16" width="271" height="56" rx="3" fill="none" stroke="rgba(255,200,40,0.12)" strokeWidth="0.8"/>
@@ -733,7 +733,7 @@ export default function App() {
                 <rect x="112" y="16" width="38" height="54" rx="2" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
                 <text x="131" y="46" textAnchor="middle" fill="rgba(255,255,255,0.18)" fontSize="6.5" letterSpacing="0.5">ประตู</text>
                 <rect x="602" y="14" width="42" height="205" rx="3" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.05)" strokeWidth="0.8" strokeDasharray="4,4"/>
-                <text x="623" y="65" textAnchor="middle" fill="rgba(255,255,255,0.1)" fontSize="6.5" fontWeight="600" letterSpacing="1.5" transform="rotate(-90 623 65)">COMING SOON</text>
+                <text x="580" y="65" textAnchor="middle" fill="rgba(255,255,255,0.1)" fontSize="6.5" fontWeight="600" letterSpacing="1.5" transform="rotate(-90 623 65)">COMING SOON</text>
                 <rect x="602" y="232" width="42" height="30" rx="3" fill="#0e0820" stroke="#0c0618" strokeWidth="1"/>
                 <text x="623" y="251" textAnchor="middle" fill="rgba(140,140,220,0.55)" fontSize="14">♂</text>
                 <rect x="602" y="268" width="42" height="30" rx="3" fill="#200810" stroke="#180610" strokeWidth="1"/>
@@ -791,33 +791,52 @@ export default function App() {
 
             {/* Summary */}
             {selected&&(
-              <div style={{
-                display:'flex',alignItems:'center',gap:14,padding:'14px 16px',
-                background:'rgba(184,50,40,0.08)',border:'1px solid rgba(184,50,40,0.2)',
-                borderRadius:10,marginBottom:20,
-              }}>
-                <div style={{
-                  width:50,height:50,borderRadius:8,flexShrink:0,
-                  background:'rgba(184,50,40,0.16)',border:'1px solid rgba(184,50,40,0.35)',
-                  display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
-                }}>
-                  <span style={{fontSize:7,color:'rgba(255,255,255,0.25)',fontWeight:700,letterSpacing:1}}>TABLE</span>
-                  <span style={{fontSize:20,fontWeight:800,color:'#f0a020',lineHeight:1.1}}>
-                    {selected}{pairSelected&&pairTable?`+${pairTable}`:''}
-                  </span>
-                </div>
-                <div>
-                  <div style={{fontSize:8,color:'rgba(255,255,255,0.2)',fontWeight:700,letterSpacing:2,marginBottom:4}}>RESERVATION</div>
-                  <div style={{fontSize:12,color:'rgba(255,255,255,0.65)'}}>
-                    {form.booking_date ? `${form.booking_date.split('-')[2]} ${MONTH_TH[parseInt(form.booking_date.split('-')[1])-1]} ${form.booking_date.split('-')[0]}` : '—'}
-                  </div>
-                  <div style={{fontSize:12,color:'rgba(255,255,255,0.65)'}}>{form.booking_time||'—'}</div>
-                  {pairSelected&&pairTable&&(
-                    <div style={{fontSize:10,color:'#d4890a',marginTop:3}}>ต่อโต๊ะ {pairTable}</div>
-                  )}
-                </div>
-              </div>
-            )}
+  <div style={{
+    padding:'14px 16px',
+    background:'rgba(184,50,40,0.08)',border:'1px solid rgba(184,50,40,0.2)',
+    borderRadius:10,marginBottom:20,
+    display:'flex',alignItems:'flex-start',gap:14,
+  }}>
+    {/* Badge โต๊ะ */}
+    <div style={{
+      flexShrink:0,minWidth:52,padding:'6px 10px',borderRadius:8,
+      background:'rgba(184,50,40,0.16)',border:'1px solid rgba(184,50,40,0.35)',
+      display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1,
+    }}>
+      <span style={{fontSize:6,color:'rgba(255,255,255,0.25)',fontWeight:700,letterSpacing:1}}>TABLE</span>
+      <span style={{fontSize:18,fontWeight:800,color:'#f0a020',lineHeight:1.15}}>{selected}</span>
+      {pairSelected&&pairTable&&(
+        <>
+          <span style={{fontSize:11,color:'rgba(255,255,255,0.3)',lineHeight:1}}>+</span>
+          <span style={{fontSize:18,fontWeight:800,color:'#f0a020',lineHeight:1.15}}>{pairTable}</span>
+        </>
+      )}
+    </div>
+    {/* Info */}
+    <div style={{flex:1}}>
+      <div style={{fontSize:8,color:'rgba(255,255,255,0.2)',fontWeight:700,letterSpacing:2,marginBottom:6}}>RESERVATION</div>
+      <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
+        
+        <span style={{fontSize:13,color:'rgba(255,255,255,0.75)',fontWeight:600}}>
+          {form.booking_date ? `${form.booking_date.split('-')[2]} ${MONTH_TH[parseInt(form.booking_date.split('-')[1])-1]} ${form.booking_date.split('-')[0]}` : '—'}
+        </span>
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:pairSelected&&pairTable?8:0}}>
+        
+        <span style={{fontSize:13,color:'rgba(255,255,255,0.75)',fontWeight:600}}>{form.booking_time||'—'}</span>
+      </div>
+      {pairSelected&&pairTable&&(
+        <div style={{
+          display:'inline-flex',alignItems:'center',gap:5,
+          background:'rgba(212,137,10,0.12)',border:'1px solid rgba(212,137,10,0.3)',
+          borderRadius:5,padding:'3px 8px',
+        }}>
+          <span style={{fontSize:9,color:'#d4890a',fontWeight:700}}>ต่อโต๊ะ {pairTable}</span>
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
             {/* Date/Time picker ถ้ายังไม่ได้เลือก */}
             {(!form.booking_date||!form.booking_time)&&(
@@ -891,7 +910,100 @@ export default function App() {
           </div>
         </div>
       )}
+      {/* หมายเหตุ */}
+<div
+  style={{
+    marginTop: 22,
+    background: 'rgba(255,255,255,0.025)',
+    border: '1px solid rgba(255,255,255,0.06)',
+    borderRadius: 14,
+    padding: '16px 18px',
+  }}
+>
+  {/* HEADER */}
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 12,
+    }}
+  >
+    {/* ICON */}
+    <div
+      style={{
+        width: 24,
+        height: 24,
+        borderRadius: '50%',
+        border: '1px solid rgba(255,255,255,0.12)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'rgba(255,255,255,0.55)',
+        fontSize: 13,
+        fontWeight: 700,
+        flexShrink: 0,
+      }}
+    >
+      i
+    </div>
 
+    <span
+      style={{
+        color: '#d94c3d',
+        fontSize: 16,
+        fontWeight: 700,
+      }}
+    >
+      หมายเหตุ
+    </span>
+  </div>
+
+  {/* LIST */}
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10,
+      paddingLeft: 6,
+    }}
+  >
+    {[
+      'กรุณามาถึงก่อนเวลาอย่างน้อย 15 นาที',
+      'หากไม่มาตามเวลาที่จองไว้ การจองอาจถูกยกเลิกอัตโนมัติ',
+      'กรุณาแคปหน้าจอการจองไว้เป็นหลักฐาน',
+    ].map((txt, i) => (
+      <div
+        key={i}
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 10,
+        }}
+      >
+        <span
+          style={{
+            color: 'rgba(255,255,255,0.4)',
+            marginTop: 2,
+            fontSize: 10,
+          }}
+        >
+          ●
+        </span>
+
+        <span
+          style={{
+            color: 'rgba(255,255,255,0.58)',
+            fontSize: 13,
+            lineHeight: 1.6,
+          }}
+        >
+          {txt}
+        </span>
+      </div>
+    ))}
+  </div>
+</div>
       {/* ── LIST VIEW (admin only) ── */}
       {step==='list'&&(
         <div style={{flex:1,overflow:'auto',padding:'20px 16px'}}>
