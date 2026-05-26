@@ -9,6 +9,7 @@ const DAY_NUM = {'2026-05-20':'20','2026-05-21':'21','2026-05-22':'22','2026-05-
 const R = 12
 const mk = (id, x, y, z) => ({ id, x, y, z })
 
+
 const TABLES = [
   mk('A1',  55, 172, 'A'), mk('A2',  55, 202, 'A'), mk('A3',  55, 245, 'A'),
   mk('A4',  55, 275, 'A'), mk('A5',  55, 305, 'A'),
@@ -162,6 +163,7 @@ export default function App() {
   const [step, setStep] = useState('map')
   const [admin, setAdmin] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     fetchBookings()
@@ -304,44 +306,177 @@ export default function App() {
     }}>
 
       {/* TOPBAR */}
-      <header style={{
-        height:50, flexShrink:0, display:'flex', alignItems:'center',
-        justifyContent:'space-between', padding:'0 20px',
-        background:'rgba(4,0,0,0.98)', borderBottom:'1px solid rgba(255,255,255,0.05)',
-        position:'sticky', top:0, zIndex:200,
-      }}>
-        <div style={{ display:'flex', alignItems:'baseline', gap:10 }}>
-          <span style={{ fontSize:15, fontWeight:800, letterSpacing:4, color:'#d4980a' }}>DUEM BORM</span>
-          <span style={{ fontSize:8.5, letterSpacing:3, color:'rgba(255,255,255,0.12)', fontWeight:600 }}>TABLE RESERVATION</span>
-        </div>
-        <nav style={{ display:'flex', background:'rgba(255,255,255,0.04)', borderRadius:6, padding:3, gap:2 }}>
-          {[['map','Floor Plan'],['list','Bookings']].map(([s,l]) => (
-            <button key={s} onClick={() => {
+<header style={{
+  minHeight: 58,
+  flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '0 14px',
+  background: 'rgba(4,0,0,0.98)',
+  borderBottom: '1px solid rgba(255,255,255,0.05)',
+  position: 'sticky',
+  top: 0,
+  zIndex: 999,
+}}>
 
-  if (s === 'list' && !admin) {
+  {/* LOGO */}
+  <div style={{
+    display:'flex',
+    flexDirection:'column',
+    justifyContent:'center'
+  }}>
+    <span style={{
+      fontSize:14,
+      fontWeight:800,
+      letterSpacing:3,
+      color:'#d4980a'
+    }}>
+      DUEM BAR
+    </span>
 
-    const pass = prompt('Admin Password')
+    <span style={{
+      fontSize:7,
+      letterSpacing:2,
+      color:'rgba(255,255,255,0.18)'
+    }}>
+      TABLE RESERVATION
+    </span>
+  </div>
 
-    if (pass !== 'duem2026') {
-      alert('Wrong Password')
-      return
-    }
+  {/* DESKTOP MENU */}
+  <nav style={{
+    display: window.innerWidth > 768 ? 'flex' : 'none',
+    background:'rgba(255,255,255,0.04)',
+    borderRadius:6,
+    padding:3,
+    gap:2
+  }}>
 
-    setAdmin(true)
-  }
+    {[['map','Floor Plan'],['list','Bookings']].map(([s,l]) => (
+      <button
+        key={s}
+        onClick={() => {
 
-  setStep(s)
-}} style={{
-              padding:'5px 14px', borderRadius:4, border:'none', cursor:'pointer',
-              fontFamily:'inherit', fontSize:11, fontWeight:600, letterSpacing:0.6,
-              background: step===s ? '#b83228' : 'transparent',
-              color: step===s ? '#fff' : 'rgba(255,255,255,0.3)',
-              transition:'all 0.18s',
-              boxShadow: step===s ? '0 1px 8px rgba(184,50,40,0.5)' : 'none',
-            }}>{l}</button>
-          ))}
-        </nav>
-      </header>
+          if (s === 'list' && !admin) {
+
+            const pass = prompt('Admin Password')
+
+            if (pass !== 'duem2026') {
+              alert('Wrong Password')
+              return
+            }
+
+            setAdmin(true)
+          }
+
+          setStep(s)
+        }}
+        style={{
+          padding:'6px 14px',
+          borderRadius:4,
+          border:'none',
+          cursor:'pointer',
+          fontFamily:'inherit',
+          fontSize:11,
+          fontWeight:600,
+          background: step===s ? '#b83228' : 'transparent',
+          color: step===s ? '#fff' : 'rgba(255,255,255,0.35)',
+        }}
+      >
+        {l}
+      </button>
+    ))}
+  </nav>
+
+  {/* MOBILE HAMBURGER */}
+  <button
+    onClick={() => setMenuOpen(!menuOpen)}
+    style={{
+      display: window.innerWidth <= 768 ? 'flex' : 'none',
+      flexDirection:'column',
+      justifyContent:'center',
+      gap:4,
+      background:'transparent',
+      border:'none',
+      cursor:'pointer'
+    }}
+  >
+    <span style={{
+      width:22,
+      height:2,
+      background:'#fff',
+      borderRadius:2
+    }} />
+
+    <span style={{
+      width:22,
+      height:2,
+      background:'#fff',
+      borderRadius:2
+    }} />
+
+    <span style={{
+      width:22,
+      height:2,
+      background:'#fff',
+      borderRadius:2
+    }} />
+  </button>
+</header>
+
+{/* MOBILE MENU */}
+{menuOpen && (
+  <div style={{
+    position:'fixed',
+    top:58,
+    left:0,
+    right:0,
+    background:'#090101',
+    borderBottom:'1px solid rgba(255,255,255,0.06)',
+    zIndex:998,
+    padding:'10px 14px',
+    display:'flex',
+    flexDirection:'column',
+    gap:8
+  }}>
+
+    {[['map','Floor Plan'],['list','Bookings']].map(([s,l]) => (
+      <button
+        key={s}
+        onClick={() => {
+
+          if (s === 'list' && !admin) {
+
+            const pass = prompt('Admin Password')
+
+            if (pass !== 'duem2026') {
+              alert('Wrong Password')
+              return
+            }
+
+            setAdmin(true)
+          }
+
+          setStep(s)
+          setMenuOpen(false)
+        }}
+        style={{
+          height:42,
+          borderRadius:6,
+          border:'none',
+          background: step===s ? '#b83228' : 'rgba(255,255,255,0.04)',
+          color:'#fff',
+          fontSize:13,
+          fontWeight:700,
+          cursor:'pointer'
+        }}
+      >
+        {l}
+      </button>
+    ))}
+  </div>
+)}
 
       {/* MAP VIEW */}
       {step==='map' && (
