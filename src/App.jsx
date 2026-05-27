@@ -991,7 +991,7 @@ export default function App() {
         <span
           style={{
             color: 'rgba(255,255,255,0.58)',
-            fontSize: 1,
+            fontSize: 10,
             lineHeight: 1.6,
           }}
         >
