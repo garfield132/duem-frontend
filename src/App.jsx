@@ -485,18 +485,18 @@ export default function App(){
                 <rect x="160" y="14" width="275" height="60" rx="4" fill="#3a2c04" stroke="#4e3e08" strokeWidth="1"/>
                 <rect x="162" y="16" width="271" height="56" rx="3" fill="none" stroke="rgba(255,200,40,0.12)" strokeWidth="0.8"/>
                 <text x="297" y="48" textAnchor="middle" fill="rgba(255,235,150,0.75)" fontSize="13" fontWeight="700" letterSpacing="5" style={{pointerEvents:'none'}}>STAGE</text>
-                <rect x="6" y="48" width="98" height="98" rx="4" fill="#160c04" stroke="#281608" strokeWidth="1.5"/>
+                <rect x="6" y="13" width="98" height="95" rx="4" fill="#160c04" stroke="#281608" strokeWidth="1.5"/>
                 {[0,9,18,27,36,45,54,63,72,81,90].map(dy=>(
                   <line key={dy} x1="8" y1={50+dy} x2="102" y2={50+dy} stroke="#1e1006" strokeWidth="0.65" opacity="0.7"/>
                 ))}
-                <rect x="6" y="48" width="98" height="8" rx="3" fill="#3a1e08" stroke="#281608" strokeWidth="1"/>
-                <text x="55" y="103" textAnchor="middle" fill="#8a6028" fontSize="10" fontWeight="700" letterSpacing="4" style={{pointerEvents:'none'}}>BAR</text>
-                <rect x="6" y="8" width="40" height="32" rx="3" fill="#0e0820" stroke="#0c0618" strokeWidth="1"/>
-                <text x="26" y="18" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontWeight="600" letterSpacing="1">W.C</text>
-                <text x="26" y="33" textAnchor="middle" fill="rgba(140,140,220,0.55)" fontSize="13">♂</text>
-                <rect x="50" y="8" width="40" height="32" rx="3" fill="#200810" stroke="#180610" strokeWidth="1"/>
-                <text x="70" y="18" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontWeight="600" letterSpacing="1">W.C</text>
-                <text x="70" y="33" textAnchor="middle" fill="rgba(220,140,150,0.55)" fontSize="13">♀</text>
+                <rect x="6" y="13" width="98" height="8" rx="3" fill="#3a1e08" stroke="#281608" strokeWidth="1"/>
+                <text x="55" y="70" textAnchor="middle" fill="#8a6028" fontSize="10" fontWeight="700" letterSpacing="4" style={{pointerEvents:'none'}}>BAR</text>
+                <rect x="6" y="110" width="40" height="32" rx="3" fill="#0e0820" stroke="#0c0618" strokeWidth="1"/>
+                <text x="26" y="119" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontWeight="600" letterSpacing="1">W.C</text>
+                <text x="26" y="132" textAnchor="middle" fill="rgba(140,140,220,0.55)" fontSize="13">♂</text>
+                <rect x="55" y="110" width="40" height="32" rx="3" fill="#200810" stroke="#180610" strokeWidth="1"/>
+                <text x="75" y="119" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="7" fontWeight="600" letterSpacing="1">W.C</text>
+                <text x="75" y="132" textAnchor="middle" fill="rgba(220,140,150,0.55)" fontSize="13">♀</text>
                 <rect x="112" y="16" width="38" height="54" rx="2" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
                 <text x="131" y="46" textAnchor="middle" fill="rgba(255,255,255,0.18)" fontSize="6.5" letterSpacing="0.5">ประตู</text>
                 <rect x="602" y="14" width="42" height="205" rx="3" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.05)" strokeWidth="0.8" strokeDasharray="4,4"/>
