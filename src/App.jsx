@@ -1,54 +1,84 @@
 import { useEffect, useState, useRef } from 'react'
 const API_URL = import.meta.env.VITE_API_URL
 
-// ── Table pairs ──
-const TABLE_PAIRS = {
-  'A10': 'A11', 'A11': 'A10',
-  'A20': 'A21', 'A21': 'A20',
-  'A26': 'A27', 'A27': 'A26',
-  'A36': 'A37', 'A37': 'A36',
-  'A42': 'A43', 'A43': 'A42',
+// ── Table chains ──
+const TABLE_CHAINS = {
+  'A1': ['A1','A2'], 'A2': ['A1','A2'],
+  'A3': ['A3','A4','A5'], 'A4': ['A3','A4','A5'], 'A5': ['A3','A4','A5'],
+  'A6': ['A6','A7'], 'A7': ['A6','A7'],
+  'A8': ['A8','A9'], 'A9': ['A8','A9'],
+  'A10': ['A10','A11'], 'A11': ['A10','A11'],
+  'A12': ['A12','A13'], 'A13': ['A12','A13'],
+  'A14': ['A14','A15'], 'A15': ['A14','A15'],
+  'A16': ['A16','A17'], 'A17': ['A16','A17'],
+  'A18': ['A18','A19'], 'A19': ['A18','A19'],
+  'A20': ['A20','A21'], 'A21': ['A20','A21'],
+  'A22': ['A22','A23'], 'A23': ['A22','A23'],
+  'A24': ['A24','A25'], 'A25': ['A24','A25'],
+  'A26': ['A26','A27'], 'A27': ['A26','A27'],
+  'A28': ['A28','A29'], 'A29': ['A28','A29'],
+  'A30': ['A30','A31'], 'A31': ['A30','A31'],
+  'A32': ['A32','A33'], 'A33': ['A32','A33'],
+  'A34': ['A34','A35'], 'A35': ['A34','A35'],
+  'A36': ['A36','A37'], 'A37': ['A36','A37'],
+  'A38': ['A38','A39'], 'A39': ['A38','A39'],
+  'A40': ['A40','A41'], 'A41': ['A40','A41'],
+  'A42': ['A42','A43'], 'A43': ['A42','A43'],
+  'A44': ['A44','A45'], 'A45': ['A44','A45'],
+  'A47': ['A47','A48'], 'A48': ['A47','A48'],
+  'B1': ['B1','B2','B3','B4'], 'B2': ['B1','B2','B3','B4'],
+  'B3': ['B1','B2','B3','B4'], 'B4': ['B1','B2','B3','B4'],
+  'B5': ['B5','B6','B7','B8'], 'B6': ['B5','B6','B7','B8'],
+  'B7': ['B5','B6','B7','B8'], 'B8': ['B5','B6','B7','B8'],
+  'B9': ['B9','B10','B11','B12'], 'B10': ['B9','B10','B11','B12'],
+  'B11': ['B9','B10','B11','B12'], 'B12': ['B9','B10','B11','B12'],
+  'B13': ['B13','B14'], 'B14': ['B13','B14'],
+  'B15': ['B15','B16'], 'B16': ['B15','B16'],
+  'B17': ['B17','B18'], 'B18': ['B17','B18'],
+  'B19': ['B19','B22'], 'B22': ['B19','B22'],
+  'B20': ['B20','B23'], 'B23': ['B20','B23'],
+  'B21': ['B21','B24'], 'B24': ['B21','B24'],
+  'C1': ['C1','C2'], 'C2': ['C1','C2'],
+  'C3': ['C3','C4'], 'C4': ['C3','C4'],
+  'C5': ['C5','C6'], 'C6': ['C5','C6'],
+  'C7': ['C7','C8'], 'C8': ['C7','C8'],
+  'C9': ['C9','C10'], 'C10': ['C9','C10'],
+  'D1': ['D1','D3','D5'], 'D3': ['D1','D3','D5'], 'D5': ['D1','D3','D5'],
+  'D2': ['D2','D4','D6'], 'D4': ['D2','D4','D6'], 'D6': ['D2','D4','D6'],
 }
 
-// ── Calendar helpers ──
 const MONTH_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']
 const MONTH_TH_FULL = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม']
 const DAY_NAMES = ['อา','จ','อ','พ','พฤ','ศ','ส']
 const DAY_FULL  = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์']
 
-function getDaysInMonth(y, m) { return new Date(y, m + 1, 0).getDate() }
-function getFirstDayOfWeek(y, m) { return new Date(y, m, 1).getDay() }
-function toDateStr(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}` }
-function parseDateStr(s) { if (!s) return null; const [y, m, d] = s.split('-').map(Number); return { y, m: m-1, d } }
-function getTodayStr() { const n = new Date(); return toDateStr(n.getFullYear(), n.getMonth(), n.getDate()) }
-function getTomorrowStr() { const n = new Date(); n.setDate(n.getDate() + 1); return toDateStr(n.getFullYear(), n.getMonth(), n.getDate()) }
-function getDayOfWeek(dateStr) { return new Date(dateStr).getDay() }
-function getDayName(dateStr) { return DAY_FULL[getDayOfWeek(dateStr)] }
+function getDaysInMonth(y,m){ return new Date(y,m+1,0).getDate() }
+function getFirstDayOfWeek(y,m){ return new Date(y,m,1).getDay() }
+function toDateStr(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}` }
+function parseDateStr(s){ if(!s) return null; const [y,m,d]=s.split('-').map(Number); return {y,m:m-1,d} }
+function getTodayStr(){ const n=new Date(); return toDateStr(n.getFullYear(),n.getMonth(),n.getDate()) }
+function getTomorrowStr(){ const n=new Date(); n.setDate(n.getDate()+1); return toDateStr(n.getFullYear(),n.getMonth(),n.getDate()) }
+function getDayOfWeek(dateStr){ return new Date(dateStr).getDay() }
+function getDayName(dateStr){ return DAY_FULL[getDayOfWeek(dateStr)] }
 
-// ── Get current booking time (actual time) ──
-function getCurrentBookingTime() {
-  const now = new Date()
-  const h = now.getHours()
-  const m = now.getMinutes()
-  // round down to nearest 30 min
-  const mins = m < 30 ? '00' : '30'
+function getCurrentBookingTime(){
+  const now=new Date()
+  const h=now.getHours()
+  const m=now.getMinutes()
+  const mins=m<30?'00':'30'
   return `${String(h).padStart(2,'0')}:${mins}`
 }
 
-// ── Check if currently within booking window 12:00–18:00 ──
-function isWithinBookingHours() {
-  const now = new Date()
-  const h = now.getHours()
-  const m = now.getMinutes()
-  const total = h * 60 + m
-  return total >= 12 * 60 && total < 18 * 60
+function isWithinBookingHours(){
+  const now=new Date()
+  const total=now.getHours()*60+now.getMinutes()
+  return total>=12*60&&total<18*60
 }
 
-// ── Constants ──
-const R = 12
-const mk = (id, x, y, z) => ({ id, x, y, z })
+const R=12
+const mk=(id,x,y,z)=>({id,x,y,z})
 
-const TABLES = [
+const TABLES=[
   mk('A1',55,172,'A'),mk('A2',55,202,'A'),mk('A3',55,245,'A'),
   mk('A4',55,275,'A'),mk('A5',55,305,'A'),
   mk('A6',85,172,'A'),mk('A7',85,202,'A'),
@@ -95,217 +125,115 @@ const TABLES = [
   mk('C9',305,485,'C'),mk('C10',305,525,'C'),
 ]
 
-const ZC = {
-  A:{free:'#c0392b',book:'#2a0808',sel:'#d4890a',hov:'#e04535',pair:'#b05000'},
-  B:{free:'#922b21',book:'#200606',sel:'#b07208',hov:'#b03528',pair:'#904000'},
-  C:{free:'#6e1c14',book:'#180404',sel:'#905a08',hov:'#882218',pair:'#703000'},
-  D:{free:'#8b4513',book:'#241208',sel:'#a06010',hov:'#a85520',pair:'#804010'},
+const ZC={
+  A:{free:'#c0392b',book:'#2a0808',sel:'#d4890a',hov:'#e04535',extra:'#b05000'},
+  B:{free:'#922b21',book:'#200606',sel:'#b07208',hov:'#b03528',extra:'#904000'},
+  C:{free:'#6e1c14',book:'#180404',sel:'#905a08',hov:'#882218',extra:'#703000'},
+  D:{free:'#8b4513',book:'#241208',sel:'#a06010',hov:'#a85520',extra:'#804010'},
 }
 
-function useIsMobile() {
-  const [m,setM] = useState(window.innerWidth<=768)
-  useEffect(()=>{
-    const fn=()=>setM(window.innerWidth<=768)
-    window.addEventListener('resize',fn)
-    return ()=>window.removeEventListener('resize',fn)
-  },[])
+function useIsMobile(){
+  const [m,setM]=useState(window.innerWidth<=768)
+  useEffect(()=>{ const fn=()=>setM(window.innerWidth<=768); window.addEventListener('resize',fn); return ()=>window.removeEventListener('resize',fn) },[])
   return m
 }
 
 // ── Outside Hours Popup ──
-function OutsideHoursPopup({ onClose }) {
+function OutsideHoursPopup({ onClose }){
   return (
-    <div style={{
-      position:'fixed',inset:0,zIndex:2000,
-      background:'rgba(0,0,0,0.88)',backdropFilter:'blur(8px)',
-      display:'flex',alignItems:'center',justifyContent:'center',
-      padding:24,
-    }}>
-      <div style={{
-        background:'#0e0101',
-        border:'1px solid rgba(192,57,43,0.25)',
-        borderRadius:16,
-        padding:'32px 28px',
-        width:'100%',
-        maxWidth:340,
-        boxShadow:'0 32px 80px rgba(0,0,0,0.95)',
-        textAlign:'center',
-      }}>
-        <div style={{
-          width:52,height:52,borderRadius:12,
-          background:'rgba(192,57,43,0.1)',
-          border:'1px solid rgba(192,57,43,0.2)',
-          display:'flex',alignItems:'center',justifyContent:'center',
-          margin:'0 auto 20px',
-        }}>
+    <div style={{position:'fixed',inset:0,zIndex:2000,background:'rgba(0,0,0,0.88)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+      <div style={{background:'#0e0101',border:'1px solid rgba(192,57,43,0.25)',borderRadius:16,padding:'32px 28px',width:'100%',maxWidth:340,boxShadow:'0 32px 80px rgba(0,0,0,0.95)',textAlign:'center'}}>
+        <div style={{width:52,height:52,borderRadius:12,background:'rgba(192,57,43,0.1)',border:'1px solid rgba(192,57,43,0.2)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="9" stroke="rgba(192,57,43,0.7)" strokeWidth="1.5"/>
             <path d="M12 7v5.5l3.5 2" stroke="rgba(192,57,43,0.7)" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
         </div>
-        <div style={{
-          fontSize:11,fontWeight:700,letterSpacing:3,
-          color:'rgba(192,57,43,0.6)',marginBottom:10,
-        }}>RESERVATION HOURS</div>
-        <div style={{
-          fontSize:17,fontWeight:700,color:'rgba(255,255,255,0.88)',
-          marginBottom:10,lineHeight:1.5,
-        }}>ขออภัยในความไม่สะดวก</div>
-        <div style={{
-          fontSize:13,color:'rgba(255,255,255,0.45)',lineHeight:1.8,
-          marginBottom:24,
-        }}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:3,color:'rgba(192,57,43,0.6)',marginBottom:10}}>RESERVATION HOURS</div>
+        <div style={{fontSize:17,fontWeight:700,color:'rgba(255,255,255,0.88)',marginBottom:10,lineHeight:1.5}}>ขออภัยในความไม่สะดวก</div>
+        <div style={{fontSize:13,color:'rgba(255,255,255,0.45)',lineHeight:1.8,marginBottom:24}}>
           ร้าน DUEM เปิดรับการจองโต๊ะ<br/>
           ในช่วงเวลา <span style={{color:'#f0a020',fontWeight:700}}>12:00 — 18:00 น.</span> เท่านั้น<br/>
           กรุณากลับมาใหม่ในช่วงเวลาดังกล่าว
         </div>
-        <button onClick={onClose} style={{
-          width:'100%',height:44,borderRadius:8,border:'none',
-          background:'rgba(192,57,43,0.15)',
-          border:'1px solid rgba(192,57,43,0.3)',
-          color:'rgba(255,255,255,0.6)',fontSize:13,fontWeight:600,
-          cursor:'pointer',fontFamily:'inherit',letterSpacing:0.5,
-          transition:'all 0.15s',
-        }}
-          onMouseEnter={e=>{ e.currentTarget.style.background='rgba(192,57,43,0.25)'; e.currentTarget.style.color='rgba(255,255,255,0.9)' }}
-          onMouseLeave={e=>{ e.currentTarget.style.background='rgba(192,57,43,0.15)'; e.currentTarget.style.color='rgba(255,255,255,0.6)' }}
-        >รับทราบ</button>
+        <button onClick={onClose} style={{width:'100%',height:44,borderRadius:8,border:'1px solid rgba(192,57,43,0.3)',background:'rgba(192,57,43,0.15)',color:'rgba(255,255,255,0.6)',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'inherit',letterSpacing:0.5,transition:'all 0.15s'}}
+          onMouseEnter={e=>{e.currentTarget.style.background='rgba(192,57,43,0.25)';e.currentTarget.style.color='rgba(255,255,255,0.9)'}}
+          onMouseLeave={e=>{e.currentTarget.style.background='rgba(192,57,43,0.15)';e.currentTarget.style.color='rgba(255,255,255,0.6)'}}>รับทราบ</button>
       </div>
     </div>
   )
 }
 
 // ── Success Popup ──
-function SuccessPopup({ tableName, pairName, bookingDate, bookingTime, customerName, onClose }) {
-  const dd = bookingDate ? {
-    day: parseInt(bookingDate.split('-')[2]),
-    month: MONTH_TH[parseInt(bookingDate.split('-')[1])-1],
-    year: bookingDate.split('-')[0],
-    dow: getDayName(bookingDate),
-  } : null
-
+function SuccessPopup({ tableName, pairName, bookingDate, bookingTime, customerName, onClose }){
+  const dd=bookingDate?{
+    day:parseInt(bookingDate.split('-')[2]),
+    month:MONTH_TH[parseInt(bookingDate.split('-')[1])-1],
+    year:bookingDate.split('-')[0],
+    dow:getDayName(bookingDate),
+  }:null
   return (
-    <div style={{
-      position:'fixed',inset:0,zIndex:2000,
-      background:'rgba(0,0,0,0.88)',backdropFilter:'blur(8px)',
-      display:'flex',alignItems:'center',justifyContent:'center',
-      padding:24,
-    }}>
-      <div style={{
-        background:'#0e0101',
-        border:'1px solid rgba(192,57,43,0.2)',
-        borderRadius:16,padding:'32px 28px',
-        width:'100%',maxWidth:360,
-        boxShadow:'0 32px 80px rgba(0,0,0,0.95)',
-      }}>
-        {/* Icon */}
-        <div style={{
-          width:52,height:52,borderRadius:12,
-          background:'rgba(39,174,96,0.1)',
-          border:'1px solid rgba(39,174,96,0.2)',
-          display:'flex',alignItems:'center',justifyContent:'center',
-          marginBottom:20,
-        }}>
+    <div style={{position:'fixed',inset:0,zIndex:2000,background:'rgba(0,0,0,0.88)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+      <div style={{background:'#0e0101',border:'1px solid rgba(192,57,43,0.2)',borderRadius:16,padding:'32px 28px',width:'100%',maxWidth:360,boxShadow:'0 32px 80px rgba(0,0,0,0.95)'}}>
+        <div style={{width:52,height:52,borderRadius:12,background:'rgba(39,174,96,0.1)',border:'1px solid rgba(39,174,96,0.2)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:20}}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M5 13l4 4L19 7" stroke="rgba(39,174,96,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
-
-        {/* Title */}
         <div style={{fontSize:11,fontWeight:700,letterSpacing:3,color:'rgba(39,174,96,0.6)',marginBottom:8}}>BOOKING CONFIRMED</div>
-        <div style={{fontSize:18,fontWeight:700,color:'rgba(255,255,255,0.9)',marginBottom:20}}>
-          การจองสำเร็จแล้ว
-        </div>
-
-        {/* Divider */}
+        <div style={{fontSize:18,fontWeight:700,color:'rgba(255,255,255,0.9)',marginBottom:20}}>การจองสำเร็จแล้ว</div>
         <div style={{height:1,background:'rgba(255,255,255,0.05)',marginBottom:20}}/>
-
-        {/* Details */}
         <div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:24}}>
-          {/* Table */}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
             <span style={{fontSize:11,color:'rgba(255,255,255,0.3)',letterSpacing:1,fontWeight:600}}>TABLE</span>
-            <span style={{
-              fontSize:14,fontWeight:800,color:'#f0a020',
-              background:'rgba(212,137,10,0.1)',border:'1px solid rgba(212,137,10,0.2)',
-              borderRadius:6,padding:'3px 12px',letterSpacing:1,
-            }}>
-              {tableName}{pairName ? ` + ${pairName}` : ''}
+            <span style={{fontSize:14,fontWeight:800,color:'#f0a020',background:'rgba(212,137,10,0.1)',border:'1px solid rgba(212,137,10,0.2)',borderRadius:6,padding:'3px 12px',letterSpacing:1}}>
+              {tableName}{pairName?` + ${pairName}`:''}
             </span>
           </div>
-          {/* Date */}
-          {dd && (
+          {dd&&(
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
               <span style={{fontSize:11,color:'rgba(255,255,255,0.3)',letterSpacing:1,fontWeight:600}}>DATE</span>
-              <span style={{fontSize:13,color:'rgba(255,255,255,0.75)',fontWeight:600}}>
-                {dd.dow} {dd.day} {dd.month} {dd.year}
-              </span>
+              <span style={{fontSize:13,color:'rgba(255,255,255,0.75)',fontWeight:600}}>{dd.dow} {dd.day} {dd.month} {dd.year}</span>
             </div>
           )}
-          {/* Time */}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
             <span style={{fontSize:11,color:'rgba(255,255,255,0.3)',letterSpacing:1,fontWeight:600}}>TIME</span>
             <span style={{fontSize:13,color:'rgba(255,255,255,0.75)',fontWeight:600}}>{bookingTime} น.</span>
           </div>
-          {/* Name */}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
             <span style={{fontSize:11,color:'rgba(255,255,255,0.3)',letterSpacing:1,fontWeight:600}}>NAME</span>
             <span style={{fontSize:13,color:'rgba(255,255,255,0.75)',fontWeight:600}}>{customerName}</span>
           </div>
         </div>
-
-        {/* Note */}
-        <div style={{
-          background:'rgba(255,255,255,0.025)',
-          border:'1px solid rgba(255,255,255,0.06)',
-          borderRadius:8,padding:'10px 14px',
-          fontSize:10,color:'rgba(255,255,255,0.35)',
-          lineHeight:1.7,marginBottom:20,
-        }}>
+        <div style={{background:'rgba(255,255,255,0.025)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:8,padding:'10px 14px',fontSize:10,color:'rgba(255,255,255,0.35)',lineHeight:1.7,marginBottom:20}}>
           กรุณาแคปหน้าจอนี้ไว้เป็นหลักฐาน และมาถึงก่อนเวลาอย่างน้อย 15 นาที
         </div>
-
-        <button onClick={onClose} style={{
-          width:'100%',height:44,borderRadius:8,border:'none',
-          background:'#b83228',color:'#fff',fontSize:13,fontWeight:700,
-          cursor:'pointer',fontFamily:'inherit',letterSpacing:1,
-          boxShadow:'0 4px 20px rgba(184,50,40,0.35)',
-          transition:'all 0.15s',
-        }}
+        <button onClick={onClose} style={{width:'100%',height:44,borderRadius:8,border:'none',background:'#b83228',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'inherit',letterSpacing:1,boxShadow:'0 4px 20px rgba(184,50,40,0.35)',transition:'all 0.15s'}}
           onMouseEnter={e=>e.currentTarget.style.background='#d03a2e'}
-          onMouseLeave={e=>e.currentTarget.style.background='#b83228'}
-        >ปิด</button>
+          onMouseLeave={e=>e.currentTarget.style.background='#b83228'}>ปิด</button>
       </div>
     </div>
   )
 }
 
 // ── Calendar Picker ──
-function CalendarPicker({ date, onDate, onClose }) {
-  const today = getTodayStr()
-  const initial = date ? parseDateStr(date) : parseDateStr(getTomorrowStr())
-  const [viewY, setViewY] = useState(initial.y)
-  const [viewM, setViewM] = useState(initial.m)
-  const [hov, setHov] = useState(null)
-
-  const daysInMonth = getDaysInMonth(viewY, viewM)
-  const firstDow = getFirstDayOfWeek(viewY, viewM)
-  const cells = []
-  for (let i=0; i<firstDow; i++) cells.push(null)
-  for (let d=1; d<=daysInMonth; d++) cells.push(d)
-
-  const isAvailable = (day) => toDateStr(viewY, viewM, day) > today
-
-  const prevMonth = () => { if (viewM===0){setViewY(y=>y-1);setViewM(11)}else setViewM(m=>m-1) }
-  const nextMonth = () => { if (viewM===11){setViewY(y=>y+1);setViewM(0)}else setViewM(m=>m+1) }
-  const selectedParsed = date ? parseDateStr(date) : null
-
+function CalendarPicker({ date, onDate, onClose }){
+  const today=getTodayStr()
+  const initial=date?parseDateStr(date):parseDateStr(getTomorrowStr())
+  const [viewY,setViewY]=useState(initial.y)
+  const [viewM,setViewM]=useState(initial.m)
+  const [hov,setHov]=useState(null)
+  const daysInMonth=getDaysInMonth(viewY,viewM)
+  const firstDow=getFirstDayOfWeek(viewY,viewM)
+  const cells=[]
+  for(let i=0;i<firstDow;i++) cells.push(null)
+  for(let d=1;d<=daysInMonth;d++) cells.push(d)
+  const isAvailable=(day)=>toDateStr(viewY,viewM,day)>today
+  const prevMonth=()=>{ if(viewM===0){setViewY(y=>y-1);setViewM(11)}else setViewM(m=>m-1) }
+  const nextMonth=()=>{ if(viewM===11){setViewY(y=>y+1);setViewM(0)}else setViewM(m=>m+1) }
+  const selectedParsed=date?parseDateStr(date):null
   return (
-    <div style={{
-      background:'#0e0101',border:'1px solid rgba(192,57,43,0.35)',
-      borderRadius:12,padding:16,width:290,
-      boxShadow:'0 24px 60px rgba(0,0,0,0.95)',
-    }}>
+    <div style={{background:'#0e0101',border:'1px solid rgba(192,57,43,0.35)',borderRadius:12,padding:16,width:290,boxShadow:'0 24px 60px rgba(0,0,0,0.95)'}}>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
         <button onClick={prevMonth} style={{background:'rgba(255,255,255,0.05)',border:'none',borderRadius:6,width:28,height:28,cursor:'pointer',color:'rgba(255,255,255,0.6)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
         <span style={{fontSize:13,fontWeight:700,color:'rgba(255,255,255,0.85)',letterSpacing:0.5}}>{MONTH_TH_FULL[viewM]} {viewY}</span>
@@ -319,29 +247,18 @@ function CalendarPicker({ date, onDate, onClose }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
         {cells.map((day,i)=>{
           if(!day) return <div key={i}/>
-          const avail = isAvailable(day)
-          const ds = toDateStr(viewY,viewM,day)
-          const isSel = selectedParsed && selectedParsed.y===viewY && selectedParsed.m===viewM && selectedParsed.d===day
-          const isHov = hov===day && avail
-          const dow = (firstDow+day-1)%7
-          const isWeekend = dow===0||dow===6
+          const avail=isAvailable(day)
+          const ds=toDateStr(viewY,viewM,day)
+          const isSel=selectedParsed&&selectedParsed.y===viewY&&selectedParsed.m===viewM&&selectedParsed.d===day
+          const isHov=hov===day&&avail
+          const dow=(firstDow+day-1)%7
+          const isWeekend=dow===0||dow===6
           return (
-            <button key={i}
-              onClick={()=>{ if(avail){ onDate(ds); onClose() } }}
-              onMouseEnter={()=>avail&&setHov(day)}
-              onMouseLeave={()=>setHov(null)}
-              style={{
-                height:32,borderRadius:6,border:'none',cursor:avail?'pointer':'default',fontFamily:'inherit',
-                background:isSel?'#c0392b':isHov?'rgba(192,57,43,0.2)':avail?'rgba(255,255,255,0.04)':'transparent',
-                color:isSel?'#fff':avail?(isWeekend?'rgba(255,150,130,0.9)':'rgba(255,255,255,0.82)'):'rgba(255,255,255,0.15)',
-                fontSize:12,fontWeight:isSel?700:avail?400:300,
-                outline:isSel?'none':isHov?'1px solid rgba(192,57,43,0.4)':'none',
-                transition:'all 0.1s',position:'relative',
-              }}>
+            <button key={i} onClick={()=>{ if(avail){ onDate(ds); onClose() } }}
+              onMouseEnter={()=>avail&&setHov(day)} onMouseLeave={()=>setHov(null)}
+              style={{height:32,borderRadius:6,border:'none',cursor:avail?'pointer':'default',fontFamily:'inherit',background:isSel?'#c0392b':isHov?'rgba(192,57,43,0.2)':avail?'rgba(255,255,255,0.04)':'transparent',color:isSel?'#fff':avail?(isWeekend?'rgba(255,150,130,0.9)':'rgba(255,255,255,0.82)'):'rgba(255,255,255,0.15)',fontSize:12,fontWeight:isSel?700:avail?400:300,outline:isSel?'none':isHov?'1px solid rgba(192,57,43,0.4)':'none',transition:'all 0.1s',position:'relative'}}>
               {day}
-              {avail&&!isSel&&(
-                <span style={{position:'absolute',bottom:3,left:'50%',transform:'translateX(-50%)',width:3,height:3,borderRadius:'50%',background:'rgba(192,57,43,0.5)'}}/>
-              )}
+              {avail&&!isSel&&(<span style={{position:'absolute',bottom:3,left:'50%',transform:'translateX(-50%)',width:3,height:3,borderRadius:'50%',background:'rgba(192,57,43,0.5)'}}/>)}
             </button>
           )
         })}
@@ -355,7 +272,7 @@ function CalendarPicker({ date, onDate, onClose }) {
 }
 
 // ── Admin Popup ──
-function AdminPopup({ onSuccess, onClose }) {
+function AdminPopup({ onSuccess, onClose }){
   const [pw,setPw]=useState('')
   const [err,setErr]=useState(false)
   const [shake,setShake]=useState(false)
@@ -363,7 +280,7 @@ function AdminPopup({ onSuccess, onClose }) {
   useEffect(()=>{ ref.current?.focus() },[])
   const submit=()=>{
     if(pw==='duem2026'){ onSuccess() }
-    else { setErr(true); setShake(true); setPw(''); setTimeout(()=>setShake(false),500) }
+    else{ setErr(true); setShake(true); setPw(''); setTimeout(()=>setShake(false),500) }
   }
   return (
     <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.85)',backdropFilter:'blur(6px)',display:'flex',alignItems:'center',justifyContent:'center'}} onClick={e=>{ if(e.target===e.currentTarget) onClose() }}>
@@ -390,36 +307,48 @@ function AdminPopup({ onSuccess, onClose }) {
 }
 
 // ── Bottom Sheet ──
-function BottomSheet({ selected, pairTable, form, onProceed, onDeselect, onPairToggle, isPairSelected }) {
-  const hasPair = !!pairTable
-  const isReady = form.booking_date
-
+function BottomSheet({ selected, chainTables, bookedIds, extraTables, onToggleExtra, form, onProceed, onDeselect }){
+  const isReady=form.booking_date
   return (
     <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:400,background:'#0d0000',borderTop:'1px solid rgba(192,57,43,0.3)',borderRadius:'16px 16px 0 0',padding:'14px 16px 24px',boxShadow:'0 -8px 32px rgba(0,0,0,0.7)',animation:'slideUp 0.22s ease'}}>
       <style>{`@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
       <div style={{width:36,height:3,background:'rgba(255,255,255,0.12)',borderRadius:2,margin:'0 auto 14px'}}/>
       <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12}}>
-        <div style={{display:'flex',alignItems:'center',gap:12,flex:1,minWidth:0}}>
-          <div style={{flexShrink:0}}>
-            <div style={{width:42,height:42,borderRadius:8,background:'rgba(192,57,43,0.2)',border:'1px solid rgba(192,57,43,0.4)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:8,color:'rgba(255,255,255,0.2)',fontWeight:700,letterSpacing:2,marginBottom:8}}>SELECTED</div>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:chainTables.length>0?10:0}}>
+            <div style={{width:38,height:38,borderRadius:7,background:'rgba(192,57,43,0.2)',border:'1px solid rgba(192,57,43,0.4)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
               <span style={{fontSize:6,color:'rgba(255,255,255,0.3)',fontWeight:700,letterSpacing:1}}>TBL</span>
-              <span style={{fontSize:14,fontWeight:800,color:'#f0a020',lineHeight:1}}>{selected}</span>
+              <span style={{fontSize:13,fontWeight:800,color:'#f0a020',lineHeight:1}}>{selected}</span>
+            </div>
+            <div style={{fontSize:12,color:'rgba(255,255,255,0.5)'}}>
+              {isReady?form.booking_date:'เลือกวันที่ก่อน'}
             </div>
           </div>
-          <div style={{minWidth:0}}>
-            <div style={{fontSize:8,color:'rgba(255,255,255,0.2)',fontWeight:700,letterSpacing:2,marginBottom:3}}>SELECTED</div>
-            <div style={{fontSize:12,color:'rgba(255,255,255,0.6)',fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-              {isReady ? form.booking_date : 'เลือกวันที่ก่อน'}
+          {chainTables.length>0&&(
+            <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+              {chainTables.map(t=>{
+                const isBooked=bookedIds.has(t)
+                const isChecked=extraTables.includes(t)
+                return (
+                  <button key={t} onClick={()=>!isBooked&&onToggleExtra(t)} style={{
+                    display:'flex',alignItems:'center',gap:5,
+                    background:isChecked?'rgba(212,137,10,0.15)':isBooked?'rgba(255,255,255,0.02)':'rgba(255,255,255,0.04)',
+                    border:`1px solid ${isChecked?'rgba(212,137,10,0.5)':isBooked?'rgba(255,255,255,0.06)':'rgba(255,255,255,0.1)'}`,
+                    borderRadius:6,padding:'5px 10px',cursor:isBooked?'not-allowed':'pointer',
+                    fontFamily:'inherit',transition:'all 0.15s',
+                  }}>
+                    <div style={{width:13,height:13,borderRadius:3,border:`1.5px solid ${isChecked?'#d4890a':isBooked?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.25)'}`,background:isChecked?'rgba(212,137,10,0.2)':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      {isChecked&&<svg width="7" height="7" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#f0a020" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+                    </div>
+                    <span style={{fontSize:11,fontWeight:isChecked?700:400,color:isChecked?'#f0a020':isBooked?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.5)'}}>
+                      {isBooked?`${t} (จอง)`:`+ ${t}`}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
-            {hasPair && (
-              <button onClick={onPairToggle} style={{marginTop:6,display:'flex',alignItems:'center',gap:5,background:'transparent',border:'none',cursor:'pointer',padding:0,fontFamily:'inherit'}}>
-                <div style={{width:14,height:14,borderRadius:3,border:`1.5px solid ${isPairSelected?'#d4890a':'rgba(255,255,255,0.25)'}`,background:isPairSelected?'rgba(212,137,10,0.2)':'transparent',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.15s'}}>
-                  {isPairSelected&&<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#f0a020" strokeWidth="1.5" strokeLinecap="round"/></svg>}
-                </div>
-                <span style={{fontSize:10,color:isPairSelected?'#f0a020':'rgba(255,255,255,0.4)',fontWeight:isPairSelected?600:400}}>ต่อโต๊ะ {pairTable}</span>
-              </button>
-            )}
-          </div>
+          )}
         </div>
         <div style={{display:'flex',gap:7,flexShrink:0}}>
           <button onClick={onDeselect} style={{height:36,padding:'0 12px',borderRadius:7,border:'1px solid rgba(255,255,255,0.08)',background:'transparent',color:'rgba(255,255,255,0.3)',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>ยกเลิก</button>
@@ -431,47 +360,42 @@ function BottomSheet({ selected, pairTable, form, onProceed, onDeselect, onPairT
 }
 
 // ────────────────────────────
-export default function App() {
-  const isMobile = useIsMobile()
-  const [bookings,setBookings] = useState([])
-  const [barTables,setBarTables] = useState([])
-  const [bookedIds,setBookedIds] = useState(new Set())
-  const [selected,setSelected] = useState(null)
-  const [pairSelected,setPairSelected] = useState(false)
-  const [hov,setHov] = useState(null)
-  const [form,setForm] = useState({ customer_name:'', phone:'', booking_date:'', people_count:'' })
-  const [step,setStep] = useState('map')
-  const [admin,setAdmin] = useState(false)
-  const [showAdmin,setShowAdmin] = useState(false)
-  const [loading,setLoading] = useState(false)
-  const [datePanel,setDatePanel] = useState(false)
-  const [showOutsideHours,setShowOutsideHours] = useState(false)
-  const [successData,setSuccessData] = useState(null)
-  const datePanelRef = useRef(null)
+export default function App(){
+  const isMobile=useIsMobile()
+  const [bookings,setBookings]=useState([])
+  const [barTables,setBarTables]=useState([])
+  const [bookedIds,setBookedIds]=useState(new Set())
+  const [selected,setSelected]=useState(null)
+  const [extraTables,setExtraTables]=useState([])
+  const [hov,setHov]=useState(null)
+  const [form,setForm]=useState({customer_name:'',phone:'',booking_date:'',people_count:''})
+  const [step,setStep]=useState('map')
+  const [admin,setAdmin]=useState(false)
+  const [showAdmin,setShowAdmin]=useState(false)
+  const [loading,setLoading]=useState(false)
+  const [datePanel,setDatePanel]=useState(false)
+  const [showOutsideHours,setShowOutsideHours]=useState(false)
+  const [successData,setSuccessData]=useState(null)
+  const datePanelRef=useRef(null)
 
-  // Check booking hours on mount
-  useEffect(()=>{
-    if(!isWithinBookingHours()) setShowOutsideHours(true)
-  },[])
+  useEffect(()=>{ if(!isWithinBookingHours()) setShowOutsideHours(true) },[])
 
   useEffect(()=>{
     fetchBookings(); fetchBarTables()
-    const t = setInterval(fetchBookings, 15000)
+    const t=setInterval(fetchBookings,15000)
     return ()=>clearInterval(t)
   },[])
 
   useEffect(()=>{
-    const fn = e => {
-      if(datePanelRef.current&&!datePanelRef.current.contains(e.target)) setDatePanel(false)
-    }
+    const fn=e=>{ if(datePanelRef.current&&!datePanelRef.current.contains(e.target)) setDatePanel(false) }
     document.addEventListener('mousedown',fn)
     return ()=>document.removeEventListener('mousedown',fn)
   },[])
 
   useEffect(()=>{
     if(!form.booking_date){ setBookedIds(new Set()); return }
-    const bookingTime = getCurrentBookingTime()
-    const ids = new Set(
+    const bookingTime=getCurrentBookingTime()
+    const ids=new Set(
       bookings
         .filter(b=>b.booking_date===form.booking_date&&b.booking_time===bookingTime&&b.status!=='cancelled')
         .map(b=>{ const bt=barTables.find(t=>t.id===b.table_id); return bt?bt.table_name:null })
@@ -481,88 +405,71 @@ export default function App() {
     if(selected&&ids.has(selected)) setSelected(null)
   },[form.booking_date,bookings,barTables])
 
-  useEffect(()=>{ setPairSelected(false) },[form.booking_date,selected])
+  useEffect(()=>{ setExtraTables([]) },[selected])
 
-  const fetchBookings = async()=>{
-    try{ const r=await fetch(`${API_URL}/api/bookings`); setBookings(await r.json()) } catch{}
-  }
-  const fetchBarTables = async()=>{
-    try{ const r=await fetch(`${API_URL}/api/bar_tables`); setBarTables(await r.json()) } catch{}
-  }
+  const fetchBookings=async()=>{ try{ const r=await fetch(`${API_URL}/api/bookings`); setBookings(await r.json()) }catch{} }
+  const fetchBarTables=async()=>{ try{ const r=await fetch(`${API_URL}/api/bar_tables`); setBarTables(await r.json()) }catch{} }
 
-  const bookSingleTable = async(tableName)=>{
-    const tableRow = barTables.find(t=>t.table_name===tableName)
-    if(!tableRow) return { success: false, message: 'ไม่พบโต๊ะ' }
-    const bookingTime = getCurrentBookingTime()
-    const r = await fetch(`${API_URL}/api/bookings`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        customer_name:form.customer_name, phone:form.phone,
-        table_id:tableRow.id, booking_date:form.booking_date,
-        booking_time:bookingTime,
-        people_count:form.people_count?parseInt(form.people_count):2,
-      })
+  const bookSingleTable=async(tableName)=>{
+    const tableRow=barTables.find(t=>t.table_name===tableName)
+    if(!tableRow) return {success:false,message:'ไม่พบโต๊ะ'}
+    const bookingTime=getCurrentBookingTime()
+    const r=await fetch(`${API_URL}/api/bookings`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({customer_name:form.customer_name,phone:form.phone,table_id:tableRow.id,booking_date:form.booking_date,booking_time:bookingTime,people_count:form.people_count?parseInt(form.people_count):2})
     })
-    if(!r.ok) return { success: false, message: `Server error ${r.status}` }
+    if(!r.ok) return {success:false,message:`Server error ${r.status}`}
     return await r.json()
   }
 
-  const handleSubmit = async()=>{
-    if(!form.customer_name||!form.phone||!form.booking_date||!selected){
-      alert('กรุณากรอกข้อมูลให้ครบ'); return
-    }
+  const handleSubmit=async()=>{
+    if(!form.customer_name||!form.phone||!form.booking_date||!selected){ alert('กรุณากรอกข้อมูลให้ครบ'); return }
     if(!isWithinBookingHours()){ setShowOutsideHours(true); return }
     setLoading(true)
     try{
-      const pairId = TABLE_PAIRS[selected]
-      const bookPair = pairSelected && pairId && !bookedIds.has(pairId)
-      const bookingTime = getCurrentBookingTime()
-
-      const d1 = await bookSingleTable(selected)
-      if(!d1?.success){ alert(d1?.message||'เกิดข้อผิดพลาด'); fetchBookings(); setLoading(false); return }
-      if(bookPair) await bookSingleTable(pairId)
-
+      const bookingTime=getCurrentBookingTime()
+      const allTables=[selected,...extraTables]
+      const bookedNames=[]
+      for(const t of allTables){
+        const d=await bookSingleTable(t)
+        if(!d?.success){ alert(d?.message||'เกิดข้อผิดพลาด'); fetchBookings(); setLoading(false); return }
+        bookedNames.push(t)
+      }
       setSuccessData({
-        tableName: selected,
-        pairName: bookPair ? pairId : null,
-        bookingDate: form.booking_date,
+        tableName:bookedNames[0],
+        pairName:bookedNames.length>1?bookedNames.slice(1).join(' + '):null,
+        bookingDate:form.booking_date,
         bookingTime,
-        customerName: form.customer_name,
+        customerName:form.customer_name,
       })
-      fetchBookings(); setSelected(null); setPairSelected(false)
+      fetchBookings(); setSelected(null); setExtraTables([])
       setForm({customer_name:'',phone:'',booking_date:'',people_count:''})
       setStep('map')
-    } catch{ alert('Server Error') }
+    }catch{ alert('Server Error') }
     setLoading(false)
   }
 
-  const updateStatus = async(id,status)=>{
-    try{ await fetch(`${API_URL}/api/bookings/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})}); fetchBookings() } catch{}
-  }
-  const del = async(id)=>{
-    if(!confirm('ยืนยันการลบ?')) return
-    try{ await fetch(`${API_URL}/api/bookings/${id}`,{method:'DELETE'}); fetchBookings() } catch{}
-  }
+  const updateStatus=async(id,status)=>{ try{ await fetch(`${API_URL}/api/bookings/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})}); fetchBookings() }catch{} }
+  const del=async(id)=>{ if(!confirm('ยืนยันการลบ?')) return; try{ await fetch(`${API_URL}/api/bookings/${id}`,{method:'DELETE'}); fetchBookings() }catch{} }
 
-  const pairTable = selected ? TABLE_PAIRS[selected] : null
-  const pairBooked = pairTable ? bookedIds.has(pairTable) : false
+  const chainTables=selected?(TABLE_CHAINS[selected]||[]).filter(t=>t!==selected):[]
 
-  const renderTable = tb=>{
-    const booked = bookedIds.has(tb.id)
-    const isSel = selected===tb.id
-    const isPair = selected && TABLE_PAIRS[selected]===tb.id && pairSelected && !booked
-    const isHovState = hov===tb.id && !booked
-    const s = ZC[tb.z]
-    const fill = booked?s.book:isSel?s.sel:isPair?s.pair:isHovState?s.hov:s.free
-    const fs = tb.id.length>3?7:8
+  const renderTable=tb=>{
+    const booked=bookedIds.has(tb.id)
+    const isSel=selected===tb.id
+    const isExtra=extraTables.includes(tb.id)
+    const isHovState=hov===tb.id&&!booked
+    const s=ZC[tb.z]
+    const fill=booked?s.book:isSel?s.sel:isExtra?s.extra:isHovState?s.hov:s.free
+    const fs=tb.id.length>3?7:8
     return (
       <g key={tb.id} style={{cursor:booked?'not-allowed':'pointer'}}
         onClick={()=>{ if(!booked) setSelected(p=>p===tb.id?null:tb.id) }}
         onMouseEnter={()=>setHov(tb.id)} onMouseLeave={()=>setHov(null)}>
         <circle cx={tb.x+1} cy={tb.y+1.5} r={R} fill="rgba(0,0,0,0.45)"/>
         <circle cx={tb.x} cy={tb.y} r={R} fill={fill}
-          stroke={isSel?'rgba(255,255,255,0.9)':isPair?'rgba(240,160,20,0.7)':booked?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.5)'}
-          strokeWidth={isSel?1.8:isPair?1.5:1} style={{transition:'fill 0.12s'}}/>
+          stroke={isSel?'rgba(255,255,255,0.9)':isExtra?'rgba(240,160,20,0.7)':booked?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.5)'}
+          strokeWidth={isSel?1.8:isExtra?1.5:1} style={{transition:'fill 0.12s'}}/>
         <text x={tb.x} y={tb.y-0.5} textAnchor="middle" dominantBaseline="central"
           fill={booked?'rgba(255,255,255,0.18)':'rgba(255,255,255,0.95)'}
           fontSize={fs} fontWeight="700" style={{pointerEvents:'none',userSelect:'none'}}>{tb.id}</text>
@@ -574,43 +481,21 @@ export default function App() {
     )
   }
 
-  const inp={
-    width:'100%',height:46,padding:'0 14px',borderRadius:8,
-    border:'1px solid rgba(255,255,255,0.09)',background:'rgba(255,255,255,0.04)',
-    color:'#fff',fontSize:14,fontFamily:'inherit',boxSizing:'border-box',
-    outline:'none',transition:'border 0.18s, background 0.18s',
-  }
-
-  const dd = form.booking_date ? {
-    day:parseInt(form.booking_date.split('-')[2]),
-    dow:getDayName(form.booking_date)
-  } : null
+  const inp={width:'100%',height:46,padding:'0 14px',borderRadius:8,border:'1px solid rgba(255,255,255,0.09)',background:'rgba(255,255,255,0.04)',color:'#fff',fontSize:14,fontFamily:'inherit',boxSizing:'border-box',outline:'none',transition:'border 0.18s, background 0.18s'}
+  const dd=form.booking_date?{day:parseInt(form.booking_date.split('-')[2]),dow:getDayName(form.booking_date)}:null
 
   return (
     <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',background:'#060101',color:'#fff',fontFamily:'"Inter","Sarabun","Kanit",system-ui,sans-serif'}}>
 
-      {/* Outside Hours Popup */}
-      {showOutsideHours && <OutsideHoursPopup onClose={()=>setShowOutsideHours(false)}/>}
+      {showOutsideHours&&<OutsideHoursPopup onClose={()=>setShowOutsideHours(false)}/>}
+      {successData&&<SuccessPopup tableName={successData.tableName} pairName={successData.pairName} bookingDate={successData.bookingDate} bookingTime={successData.bookingTime} customerName={successData.customerName} onClose={()=>setSuccessData(null)}/>}
 
-      {/* Success Popup */}
-      {successData && (
-        <SuccessPopup
-          tableName={successData.tableName}
-          pairName={successData.pairName}
-          bookingDate={successData.bookingDate}
-          bookingTime={successData.bookingTime}
-          customerName={successData.customerName}
-          onClose={()=>setSuccessData(null)}
-        />
-      )}
-
-      {/* TOPBAR */}
       <header style={{height:52,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 18px',background:'rgba(4,0,0,0.98)',borderBottom:'1px solid rgba(255,255,255,0.05)',position:'sticky',top:0,zIndex:300}}>
         <div>
           <div style={{fontSize:14,fontWeight:800,letterSpacing:3,color:'#d4980a',lineHeight:1.2}}>DUEM BAR</div>
           <div style={{fontSize:7.5,letterSpacing:2.5,color:'rgba(255,255,255,0.18)',fontWeight:500}}>TABLE RESERVATION</div>
         </div>
-        <button onClick={()=>{ if(admin){ setStep('list') } else setShowAdmin(true) }} title="Staff" style={{width:28,height:28,borderRadius:6,border:'none',cursor:'pointer',background:'rgba(255,255,255,0.04)',display:'flex',alignItems:'center',justifyContent:'center',opacity:0.35,transition:'opacity 0.2s'}} onMouseEnter={e=>e.currentTarget.style.opacity='0.8'} onMouseLeave={e=>e.currentTarget.style.opacity='0.35'}>
+        <button onClick={()=>{ if(admin){ setStep('list') }else setShowAdmin(true) }} title="Staff" style={{width:28,height:28,borderRadius:6,border:'none',cursor:'pointer',background:'rgba(255,255,255,0.04)',display:'flex',alignItems:'center',justifyContent:'center',opacity:0.35,transition:'opacity 0.2s'}} onMouseEnter={e=>e.currentTarget.style.opacity='0.8'} onMouseLeave={e=>e.currentTarget.style.opacity='0.35'}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="rgba(255,255,255,0.7)" strokeWidth="1.2"/>
             <path d="M4.5 6V4a2.5 2.5 0 015 0v2" stroke="rgba(255,255,255,0.7)" strokeWidth="1.2" strokeLinecap="round"/>
@@ -618,18 +503,16 @@ export default function App() {
         </button>
       </header>
 
-      {showAdmin && <AdminPopup onSuccess={()=>{setAdmin(true);setShowAdmin(false);setStep('list')}} onClose={()=>setShowAdmin(false)}/>}
+      {showAdmin&&<AdminPopup onSuccess={()=>{setAdmin(true);setShowAdmin(false);setStep('list')}} onClose={()=>setShowAdmin(false)}/>}
 
-      {/* MAP VIEW */}
       {step==='map'&&(
         <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
-          {/* Filter bar — date only */}
           <div style={{flexShrink:0,padding:'8px 14px',display:'flex',gap:8,alignItems:'center',background:'rgba(0,0,0,0.5)',borderBottom:'1px solid rgba(255,255,255,0.04)',zIndex:100}}>
             <div ref={datePanelRef} style={{position:'relative',flex:1,maxWidth:180}}>
               <button onClick={()=>setDatePanel(p=>!p)} style={{width:'100%',height:40,borderRadius:7,border:'none',cursor:'pointer',fontFamily:'inherit',background:form.booking_date?'rgba(192,57,43,0.18)':'rgba(255,255,255,0.04)',outline:`1px solid ${form.booking_date?'rgba(192,57,43,0.55)':datePanel?'rgba(192,57,43,0.4)':'rgba(255,255,255,0.08)'}`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1,transition:'all 0.15s'}}>
                 {dd
-                  ? <><span style={{fontSize:19,fontWeight:800,color:'#f0a020',lineHeight:1}}>{dd.day}</span><span style={{fontSize:8,color:'rgba(255,255,255,0.4)',fontWeight:600,letterSpacing:1}}>{dd.dow}</span></>
-                  : <><span style={{fontSize:11,color:'rgba(255,255,255,0.22)',fontWeight:600}}>วันที่</span><span style={{fontSize:8,color:'rgba(255,255,255,0.14)'}}>เลือกวันที่</span></>}
+                  ?<><span style={{fontSize:19,fontWeight:800,color:'#f0a020',lineHeight:1}}>{dd.day}</span><span style={{fontSize:8,color:'rgba(255,255,255,0.4)',fontWeight:600,letterSpacing:1}}>{dd.dow}</span></>
+                  :<><span style={{fontSize:11,color:'rgba(255,255,255,0.22)',fontWeight:600}}>วันที่</span><span style={{fontSize:8,color:'rgba(255,255,255,0.14)'}}>เลือกวันที่</span></>}
               </button>
               {datePanel&&(
                 <div style={{position:'absolute',top:'calc(100% + 6px)',left:0,zIndex:500}}>
@@ -637,9 +520,8 @@ export default function App() {
                 </div>
               )}
             </div>
-            {/* Legend */}
             <div style={{display:'flex',gap:8,paddingLeft:4,flexShrink:0}}>
-              {[['#c0392b','ว่าง'],['#d4890a','เลือก'],['#2a0808','จอง']].map(([c,l])=>(
+              {[['#c0392b','ว่าง'],['#d4890a','เลือก'],['#b05000','ต่อโต๊ะ'],['#2a0808','จอง']].map(([c,l])=>(
                 <span key={l} style={{display:'flex',alignItems:'center',gap:4,fontSize:9,color:'rgba(255,255,255,0.25)',whiteSpace:'nowrap'}}>
                   <span style={{width:7,height:7,borderRadius:'50%',background:c,display:'inline-block'}}/>{l}
                 </span>
@@ -647,7 +529,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Map */}
           <div style={{flex:1,overflow:'auto',background:'#1a1008'}}>
             <div style={{display:'inline-block',padding:14}}>
               <svg width="650" height="600" style={{display:'block'}}>
@@ -718,18 +599,18 @@ export default function App() {
           {selected&&(
             <BottomSheet
               selected={selected}
-              pairTable={!pairBooked ? pairTable : null}
+              chainTables={chainTables}
+              bookedIds={bookedIds}
+              extraTables={extraTables}
+              onToggleExtra={t=>setExtraTables(prev=>prev.includes(t)?prev.filter(x=>x!==t):[...prev,t])}
               form={form}
               onProceed={()=>setStep('form')}
-              onDeselect={()=>{ setSelected(null); setPairSelected(false) }}
-              onPairToggle={()=>setPairSelected(p=>!p)}
-              isPairSelected={pairSelected}
+              onDeselect={()=>{ setSelected(null); setExtraTables([]) }}
             />
           )}
         </div>
       )}
 
-      {/* FORM VIEW */}
       {step==='form'&&(
         <div style={{flex:1,overflow:'auto',display:'flex',flexDirection:'column',alignItems:'center',padding:'24px 16px 40px'}}>
           <div style={{width:'100%',maxWidth:420}}>
@@ -743,22 +624,20 @@ export default function App() {
                 <div style={{flexShrink:0,minWidth:52,padding:'6px 10px',borderRadius:8,background:'rgba(184,50,40,0.16)',border:'1px solid rgba(184,50,40,0.35)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1}}>
                   <span style={{fontSize:6,color:'rgba(255,255,255,0.25)',fontWeight:700,letterSpacing:1}}>TABLE</span>
                   <span style={{fontSize:18,fontWeight:800,color:'#f0a020',lineHeight:1.15}}>{selected}</span>
-                  {pairSelected&&pairTable&&(
+                  {extraTables.length>0&&(
                     <><span style={{fontSize:11,color:'rgba(255,255,255,0.3)',lineHeight:1}}>+</span>
-                    <span style={{fontSize:18,fontWeight:800,color:'#f0a020',lineHeight:1.15}}>{pairTable}</span></>
+                    <span style={{fontSize:12,fontWeight:800,color:'#f0a020',lineHeight:1.15,textAlign:'center'}}>{extraTables.join('+')}</span></>
                   )}
                 </div>
                 <div style={{flex:1}}>
                   <div style={{fontSize:8,color:'rgba(255,255,255,0.2)',fontWeight:700,letterSpacing:2,marginBottom:6}}>RESERVATION</div>
                   <div style={{fontSize:13,color:'rgba(255,255,255,0.75)',fontWeight:600,marginBottom:3}}>
-                    {form.booking_date ? `${form.booking_date.split('-')[2]} ${MONTH_TH[parseInt(form.booking_date.split('-')[1])-1]} ${form.booking_date.split('-')[0]}` : '—'}
+                    {form.booking_date?`${form.booking_date.split('-')[2]} ${MONTH_TH[parseInt(form.booking_date.split('-')[1])-1]} ${form.booking_date.split('-')[0]}`:'—'}
                   </div>
-                  <div style={{fontSize:11,color:'rgba(255,255,255,0.4)',marginBottom:pairSelected&&pairTable?8:0}}>
-                    เวลาจริง ณ วันที่จอง
-                  </div>
-                  {pairSelected&&pairTable&&(
-                    <div style={{display:'inline-flex',alignItems:'center',gap:5,background:'rgba(212,137,10,0.12)',border:'1px solid rgba(212,137,10,0.3)',borderRadius:5,padding:'3px 8px'}}>
-                      <span style={{fontSize:9,color:'#d4890a',fontWeight:700}}>ต่อโต๊ะ {pairTable}</span>
+                  <div style={{fontSize:11,color:'rgba(255,255,255,0.4)'}}>เวลาจริง ณ วันที่จอง</div>
+                  {extraTables.length>0&&(
+                    <div style={{marginTop:6,display:'inline-flex',alignItems:'center',gap:5,background:'rgba(212,137,10,0.12)',border:'1px solid rgba(212,137,10,0.3)',borderRadius:5,padding:'3px 8px'}}>
+                      <span style={{fontSize:9,color:'#d4890a',fontWeight:700}}>+ {extraTables.join(' + ')}</span>
                     </div>
                   )}
                 </div>
@@ -768,10 +647,8 @@ export default function App() {
             {!form.booking_date&&(
               <div style={{marginBottom:16}}>
                 <div ref={datePanelRef} style={{position:'relative'}}>
-                  <button onClick={()=>setDatePanel(p=>!p)} style={{width:'100%',height:46,borderRadius:8,border:'none',cursor:'pointer',fontFamily:'inherit',background:form.booking_date?'rgba(192,57,43,0.18)':'rgba(255,255,255,0.04)',outline:`1px solid ${form.booking_date?'rgba(192,57,43,0.55)':'rgba(255,255,255,0.09)'}`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1}}>
-                    {dd
-                      ? <><span style={{fontSize:17,fontWeight:800,color:'#f0a020',lineHeight:1}}>{dd.day}</span><span style={{fontSize:8,color:'rgba(255,255,255,0.4)',letterSpacing:1}}>{dd.dow}</span></>
-                      : <span style={{fontSize:12,color:'rgba(255,255,255,0.25)'}}>เลือกวันที่</span>}
+                  <button onClick={()=>setDatePanel(p=>!p)} style={{width:'100%',height:46,borderRadius:8,border:'none',cursor:'pointer',fontFamily:'inherit',background:'rgba(255,255,255,0.04)',outline:'1px solid rgba(255,255,255,0.09)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1}}>
+                    <span style={{fontSize:12,color:'rgba(255,255,255,0.25)'}}>เลือกวันที่</span>
                   </button>
                   {datePanel&&(
                     <div style={{position:'absolute',top:'calc(100% + 6px)',left:0,zIndex:500}}>
@@ -783,13 +660,8 @@ export default function App() {
             )}
 
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
-              {[
-                {k:'customer_name',ph:'ชื่อ-นามสกุล',t:'text'},
-                {k:'phone',ph:'เบอร์โทรศัพท์',t:'tel'},
-                {k:'people_count',ph:'จำนวนคน',t:'number'},
-              ].map(({k,ph,t})=>(
-                <input key={k} style={inp} type={t} placeholder={ph}
-                  value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})}
+              {[{k:'customer_name',ph:'ชื่อ-นามสกุล',t:'text'},{k:'phone',ph:'เบอร์โทรศัพท์',t:'tel'},{k:'people_count',ph:'จำนวนคน',t:'number'}].map(({k,ph,t})=>(
+                <input key={k} style={inp} type={t} placeholder={ph} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})}
                   min={t==='number'?1:undefined} max={t==='number'?20:undefined}
                   onFocus={e=>{e.target.style.border='1px solid rgba(184,50,40,0.55)';e.target.style.background='rgba(184,50,40,0.07)'}}
                   onBlur={e=>{e.target.style.border='1px solid rgba(255,255,255,0.09)';e.target.style.background='rgba(255,255,255,0.04)'}}/>
@@ -806,9 +678,9 @@ export default function App() {
                 <span style={{color:'#d94c3d',fontSize:16,fontWeight:700}}>หมายเหตุ</span>
               </div>
               <div style={{display:'flex',flexDirection:'column',gap:10,paddingLeft:6}}>
-                {['กรุณามาถึงก่อนเวลาอย่างน้อย 30 นาที','หากไม่มาตามเวลาที่จองไว้ การจองอาจถูกยกเลิกอัตโนมัติ','กรุณาแคปหน้าจอการจองไว้เป็นหลักฐาน'].map((txt,i)=>(
+                {['กรุณามาถึงก่อนเวลาอย่างน้อย 15 นาที','หากไม่มาตามเวลาที่จองไว้ การจองอาจถูกยกเลิกอัตโนมัติ','กรุณาแคปหน้าจอการจองไว้เป็นหลักฐาน'].map((txt,i)=>(
                   <div key={i} style={{display:'flex',alignItems:'flex-start',gap:10}}>
-                    <span style={{color:'rgba(255,255,255,0.4)',fontSize: 10,flexShrink: 0,lineHeight: 1.6, }}> ●</span>
+                    <span style={{color:'rgba(255,255,255,0.4)',fontSize:10,flexShrink:0,lineHeight:1.6}}>●</span>
                     <span style={{color:'rgba(255,255,255,0.58)',fontSize:10,lineHeight:1.6}}>{txt}</span>
                   </div>
                 ))}
@@ -818,7 +690,6 @@ export default function App() {
         </div>
       )}
 
-      {/* LIST VIEW */}
       {step==='list'&&(
         <div style={{flex:1,overflow:'auto',padding:'20px 16px'}}>
           <div style={{maxWidth:520,margin:'0 auto'}}>
