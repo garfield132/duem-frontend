@@ -69,10 +69,17 @@ function getCurrentBookingTime(){
   return `${String(h).padStart(2,'0')}:${mins}`
 }
 
+// ── เปลี่ยน: จองได้ 00:00 - 19:00 ──
 function isWithinBookingHours(){
   const now=new Date()
   const total=now.getHours()*60+now.getMinutes()
-  return total>=12*60&&total<18*60
+  return total < 19*60
+}
+
+// ── เปลี่ยน: จองได้วันต่อวัน (รวมวันนี้ด้วย) ──
+function isDateAvailable(dateStr){
+  const today=getTodayStr()
+  return dateStr >= today
 }
 
 const R=12
@@ -138,7 +145,7 @@ function useIsMobile(){
   return m
 }
 
-// ── Outside Hours Popup ──
+// ── Outside Hours Popup — เปลี่ยนเวลาเป็น 00:00-19:00 ──
 function OutsideHoursPopup({ onClose }){
   return (
     <div style={{position:'fixed',inset:0,zIndex:2000,background:'rgba(0,0,0,0.88)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
@@ -153,7 +160,7 @@ function OutsideHoursPopup({ onClose }){
         <div style={{fontSize:17,fontWeight:700,color:'rgba(255,255,255,0.88)',marginBottom:10,lineHeight:1.5}}>ขออภัยในความไม่สะดวก</div>
         <div style={{fontSize:13,color:'rgba(255,255,255,0.45)',lineHeight:1.8,marginBottom:24}}>
           ร้าน DUEM เปิดรับการจองโต๊ะ<br/>
-          ในช่วงเวลา <span style={{color:'#f0a020',fontWeight:700}}>12:00 — 18:00 น.</span> เท่านั้น<br/>
+          ในช่วงเวลา <span style={{color:'#f0a020',fontWeight:700}}>00:00 — 19:00 น.</span> เท่านั้น<br/>
           กรุณากลับมาใหม่ในช่วงเวลาดังกล่าว
         </div>
         <button onClick={onClose} style={{width:'100%',height:44,borderRadius:8,border:'1px solid rgba(192,57,43,0.3)',background:'rgba(192,57,43,0.15)',color:'rgba(255,255,255,0.6)',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'inherit',letterSpacing:0.5,transition:'all 0.15s'}}
@@ -164,7 +171,7 @@ function OutsideHoursPopup({ onClose }){
   )
 }
 
-// ── Success Popup ──
+// ── Success Popup — เปลี่ยนข้อความหมายเหตุ ──
 function SuccessPopup({ tableName, pairName, bookingDate, bookingTime, customerName, onClose }){
   const dd=bookingDate?{
     day:parseInt(bookingDate.split('-')[2]),
@@ -205,8 +212,18 @@ function SuccessPopup({ tableName, pairName, bookingDate, bookingTime, customerN
             <span style={{fontSize:13,color:'rgba(255,255,255,0.75)',fontWeight:600}}>{customerName}</span>
           </div>
         </div>
-        <div style={{background:'rgba(255,255,255,0.025)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:8,padding:'10px 14px',fontSize:10,color:'rgba(255,255,255,0.35)',lineHeight:1.7,marginBottom:20}}>
-          กรุณาแคปหน้าจอนี้ไว้เป็นหลักฐาน และมาถึงก่อนเวลาอย่างน้อย 15 นาที
+        <div style={{marginBottom:20,display:'flex',flexDirection:'column',gap:10}}>
+          <div style={{textAlign:'center'}}>
+            <span style={{fontSize:13,fontWeight:800,color:'#f0c040',letterSpacing:0.4}}>📸 กรุณาแคปหน้าจอนี้ไว้เป็นหลักฐาน</span>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {[['📅','วันอาทิตย์–พฤหัสบดี','ปล่อยโต๊ะ 21:00 น.'],['📅','วันศุกร์–เสาร์','ปล่อยโต๊ะ 20:30 น.']].map(([icon,day,time],i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 12px',background:'rgba(255,255,255,0.03)',borderRadius:7,border:'1px solid rgba(255,255,255,0.05)'}}>
+                <span style={{fontSize:12,color:'rgba(255,255,255,0.55)'}}>{icon} {day}</span>
+                <span style={{fontSize:12,fontWeight:800,color:'#f0a020'}}>{time}</span>
+              </div>
+            ))}
+          </div>
         </div>
         <button onClick={onClose} style={{width:'100%',height:44,borderRadius:8,border:'none',background:'#b83228',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'inherit',letterSpacing:1,boxShadow:'0 4px 20px rgba(184,50,40,0.35)',transition:'all 0.15s'}}
           onMouseEnter={e=>e.currentTarget.style.background='#d03a2e'}
@@ -216,10 +233,10 @@ function SuccessPopup({ tableName, pairName, bookingDate, bookingTime, customerN
   )
 }
 
-// ── Calendar Picker ──
+// ── Calendar Picker — เปลี่ยนให้จองได้ตั้งแต่วันนี้ ──
 function CalendarPicker({ date, onDate, onClose }){
   const today=getTodayStr()
-  const initial=date?parseDateStr(date):parseDateStr(getTomorrowStr())
+  const initial=date?parseDateStr(date):parseDateStr(getTodayStr())
   const [viewY,setViewY]=useState(initial.y)
   const [viewM,setViewM]=useState(initial.m)
   const [hov,setHov]=useState(null)
@@ -228,7 +245,8 @@ function CalendarPicker({ date, onDate, onClose }){
   const cells=[]
   for(let i=0;i<firstDow;i++) cells.push(null)
   for(let d=1;d<=daysInMonth;d++) cells.push(d)
-  const isAvailable=(day)=>toDateStr(viewY,viewM,day)>today
+  // เปลี่ยน: วันนี้จองได้ด้วย
+  const isAvailable=(day)=>toDateStr(viewY,viewM,day)>=today
   const prevMonth=()=>{ if(viewM===0){setViewY(y=>y-1);setViewM(11)}else setViewM(m=>m-1) }
   const nextMonth=()=>{ if(viewM===11){setViewY(y=>y+1);setViewM(0)}else setViewM(m=>m+1) }
   const selectedParsed=date?parseDateStr(date):null
@@ -264,7 +282,7 @@ function CalendarPicker({ date, onDate, onClose }){
         })}
       </div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:12}}>
-        <div style={{fontSize:9,color:'rgba(255,255,255,0.18)',letterSpacing:0.5}}>จองล่วงหน้าได้ตั้งแต่พรุ่งนี้</div>
+        <div style={{fontSize:9,color:'rgba(255,255,255,0.18)',letterSpacing:0.5}}>จองได้ตั้งแต่วันนี้</div>
         <button onClick={onClose} style={{background:'rgba(255,255,255,0.05)',border:'none',borderRadius:5,padding:'3px 10px',cursor:'pointer',color:'rgba(255,255,255,0.4)',fontSize:10,fontFamily:'inherit'}}>ปิด</button>
       </div>
     </div>
@@ -369,6 +387,7 @@ export default function App(){
   const [extraTables,setExtraTables]=useState([])
   const [hov,setHov]=useState(null)
   const [form,setForm]=useState({customer_name:'',phone:'',booking_date:'',people_count:''})
+  const [selectedDate,setSelectedDate]=useState('')
   const [step,setStep]=useState('map')
   const [admin,setAdmin]=useState(false)
   const [showAdmin,setShowAdmin]=useState(false)
@@ -407,20 +426,14 @@ export default function App(){
 
   useEffect(()=>{ setExtraTables([]) },[selected])
 
+  useEffect(()=>{
+    setForm(f=>({...f,booking_date:selectedDate}))
+  },[selectedDate])
+
+
+
   const fetchBookings=async()=>{ try{ const r=await fetch(`${API_URL}/api/bookings`); setBookings(await r.json()) }catch{} }
   const fetchBarTables=async()=>{ try{ const r=await fetch(`${API_URL}/api/bar_tables`); setBarTables(await r.json()) }catch{} }
-
-  const bookSingleTable=async(tableName)=>{
-    const tableRow=barTables.find(t=>t.table_name===tableName)
-    if(!tableRow) return {success:false,message:'ไม่พบโต๊ะ'}
-    const bookingTime=getCurrentBookingTime()
-    const r=await fetch(`${API_URL}/api/bookings`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({customer_name:form.customer_name,phone:form.phone,table_id:tableRow.id,booking_date:form.booking_date,booking_time:bookingTime,people_count:form.people_count?parseInt(form.people_count):2})
-    })
-    if(!r.ok) return {success:false,message:`Server error ${r.status}`}
-    return await r.json()
-  }
 
   const handleSubmit=async()=>{
     if(!form.customer_name||!form.phone||!form.booking_date||!selected){ alert('กรุณากรอกข้อมูลให้ครบ'); return }
@@ -429,15 +442,24 @@ export default function App(){
     try{
       const bookingTime=getCurrentBookingTime()
       const allTables=[selected,...extraTables]
-      const bookedNames=[]
-      for(const t of allTables){
-        const d=await bookSingleTable(t)
-        if(!d?.success){ alert(d?.message||'เกิดข้อผิดพลาด'); fetchBookings(); setLoading(false); return }
-        bookedNames.push(t)
-      }
+      const tableIds=allTables.map(name=>{ const row=barTables.find(t=>t.table_name===name); return row?row.id:null }).filter(Boolean)
+      const r=await fetch(`${API_URL}/api/bookings/bulk`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          customer_name:form.customer_name,
+          phone:form.phone,
+          table_ids:tableIds,
+          table_names:allTables,
+          booking_date:form.booking_date,
+          booking_time:bookingTime,
+          people_count:form.people_count?parseInt(form.people_count):2,
+        })
+      })
+      const d=await r.json()
+      if(!d?.success){ alert(d?.message||'เกิดข้อผิดพลาด'); fetchBookings(); setLoading(false); return }
       setSuccessData({
-        tableName:bookedNames[0],
-        pairName:bookedNames.length>1?bookedNames.slice(1).join(' + '):null,
+        tableName:allTables[0],
+        pairName:allTables.length>1?allTables.slice(1).join(' + '):null,
         bookingDate:form.booking_date,
         bookingTime,
         customerName:form.customer_name,
@@ -672,24 +694,31 @@ export default function App(){
               {loading?'กำลังจอง...':'ยืนยันการจอง'}
             </button>
 
-            <div style={{marginTop:22,background:'rgba(255,255,255,0.025)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:14,padding:'16px 18px'}}>
-              <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12}}>
-                <div style={{width:24,height:24,borderRadius:'50%',border:'1px solid rgba(255,255,255,0.12)',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(255,255,255,0.55)',fontSize:13,fontWeight:700,flexShrink:0}}>i</div>
-                <span style={{color:'#d94c3d',fontSize:16,fontWeight:700}}>หมายเหตุ</span>
+            {/* ── หมายเหตุในฟอร์ม ── */}
+            <div style={{marginTop:22,borderRadius:14,overflow:'hidden',border:'1px solid rgba(255,255,255,0.07)'}}>
+              <div style={{background:'rgba(217,76,61,0.12)',padding:'12px 18px',borderBottom:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',gap:8}}>
+                <span style={{color:'#d94c3d',fontSize:15,fontWeight:800,letterSpacing:0.5}}> หมายเหตุ</span>
               </div>
-              <div style={{display:'flex',flexDirection:'column',gap:10,paddingLeft:6}}>
-                {['กรุณามาถึงก่อนเวลาอย่างน้อย 15 นาที','หากไม่มาตามเวลาที่จองไว้ การจองอาจถูกยกเลิกอัตโนมัติ','กรุณาแคปหน้าจอการจองไว้เป็นหลักฐาน'].map((txt,i)=>(
-                  <div key={i} style={{display:'flex',alignItems:'flex-start',gap:10}}>
-                    <span style={{color:'rgba(255,255,255,0.4)',fontSize:10,flexShrink:0,lineHeight:1.6}}>●</span>
-                    <span style={{color:'rgba(255,255,255,0.58)',fontSize:10,lineHeight:1.6}}>{txt}</span>
+              <div style={{background:'rgba(255,255,255,0.02)',padding:'14px 18px',display:'flex',flexDirection:'column',gap:0}}>
+                {[
+                  {label:'อาทิตย์ - พฤหัสบดี',time:'ปล่อยโต๊ะ 21:00 น.'},
+                  {label:'ศุกร์ - เสาร์',time:'ปล่อยโต๊ะ 20:30 น.'},
+                ].map((row,i,arr)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:i<arr.length-1?'1px solid rgba(255,255,255,0.04)':'none'}}>
+                    <span style={{fontSize:13,color:'rgba(255,255,255,0.45)',fontWeight:500,letterSpacing:0.3}}>{row.label}</span>
+                    <span style={{fontSize:13,fontWeight:700,color:'#f0a020'}}>{row.time}</span>
                   </div>
                 ))}
+                <div style={{marginTop:12,paddingTop:12,borderTop:'1px solid rgba(255,255,255,0.05)',display:'flex',flexDirection:'column',gap:6}}>
+                  <span style={{fontSize:13,color:'rgba(255,255,255,0.35)',lineHeight:1.6}}>**กรณีเปิดโต๊ะแล้วต้องมีคนเฝ้าโต๊ะด้วย**</span>
+                  <span style={{fontSize:13,color:'rgba(255,255,255,0.35)',lineHeight:1.6}}>ขอบคุณที่ใช้บริการทางร้าน ขอให้สนุกกับค่ำคืนนี้นะงับ 🙏</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
-
+      
       {step==='list'&&(
         <div style={{flex:1,overflow:'auto',padding:'20px 16px'}}>
           <div style={{maxWidth:520,margin:'0 auto'}}>
