@@ -500,7 +500,7 @@ export default function App(){
                 <rect x="112" y="16" width="38" height="54" rx="2" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
                 <text x="131" y="46" textAnchor="middle" fill="rgba(255,255,255,0.18)" fontSize="6.5" letterSpacing="0.5">ประตู</text>
                 <rect x="602" y="14" width="42" height="205" rx="3" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.05)" strokeWidth="0.8" strokeDasharray="4,4"/>
-                <text x="580" y="65" textAnchor="middle" fill="rgba(255,255,255,0.1)" fontSize="6.5" fontWeight="600" letterSpacing="1.5" transform="rotate(-90 623 65)">COMING SOON</text>
+                <text x="680" y="70" textAnchor="middle" fill="rgba(136, 136, 136, 0.6)" fontSize="13" fontWeight="600" letterSpacing="2" transform="rotate(90 623 65)">BARTENDER</text>
                 <rect x="602" y="232" width="42" height="30" rx="3" fill="#0e0820" stroke="#0c0618" strokeWidth="1"/>
                 <text x="623" y="251" textAnchor="middle" fill="rgba(140,140,220,0.55)" fontSize="14">♂</text>
                 <rect x="602" y="268" width="42" height="30" rx="3" fill="#200810" stroke="#180610" strokeWidth="1"/>
