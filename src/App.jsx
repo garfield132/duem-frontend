@@ -806,9 +806,9 @@ export default function App() {
                 <span style={{color:'#d94c3d',fontSize:16,fontWeight:700}}>หมายเหตุ</span>
               </div>
               <div style={{display:'flex',flexDirection:'column',gap:10,paddingLeft:6}}>
-                {['กรุณามาถึงก่อนเวลาอย่างน้อย 15 นาที','หากไม่มาตามเวลาที่จองไว้ การจองอาจถูกยกเลิกอัตโนมัติ','กรุณาแคปหน้าจอการจองไว้เป็นหลักฐาน'].map((txt,i)=>(
+                {['กรุณามาถึงก่อนเวลาอย่างน้อย 30 นาที','หากไม่มาตามเวลาที่จองไว้ การจองอาจถูกยกเลิกอัตโนมัติ','กรุณาแคปหน้าจอการจองไว้เป็นหลักฐาน'].map((txt,i)=>(
                   <div key={i} style={{display:'flex',alignItems:'flex-start',gap:10}}>
-                    <span style={{color:'rgba(255,255,255,0.4)',marginTop:2,fontSize:10}}>●</span>
+                    <span style={{color:'rgba(255,255,255,0.4)',fontSize: 10,flexShrink: 0,lineHeight: 1.6, }}> ●</span>
                     <span style={{color:'rgba(255,255,255,0.58)',fontSize:10,lineHeight:1.6}}>{txt}</span>
                   </div>
                 ))}
