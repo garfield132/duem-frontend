@@ -48,16 +48,10 @@ const TABLE_CHAINS = {
 }
 
 const MONTH_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']
-const MONTH_TH_FULL = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม']
-const DAY_NAMES = ['อา','จ','อ','พ','พฤ','ศ','ส']
 const DAY_FULL  = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์']
 
-function getDaysInMonth(y,m){ return new Date(y,m+1,0).getDate() }
-function getFirstDayOfWeek(y,m){ return new Date(y,m,1).getDay() }
 function toDateStr(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}` }
-function parseDateStr(s){ if(!s) return null; const [y,m,d]=s.split('-').map(Number); return {y,m:m-1,d} }
 function getTodayStr(){ const n=new Date(); return toDateStr(n.getFullYear(),n.getMonth(),n.getDate()) }
-function getTomorrowStr(){ const n=new Date(); n.setDate(n.getDate()+1); return toDateStr(n.getFullYear(),n.getMonth(),n.getDate()) }
 function getDayOfWeek(dateStr){ return new Date(dateStr).getDay() }
 function getDayName(dateStr){ return DAY_FULL[getDayOfWeek(dateStr)] }
 
@@ -69,17 +63,10 @@ function getCurrentBookingTime(){
   return `${String(h).padStart(2,'0')}:${mins}`
 }
 
-// ── เปลี่ยน: จองได้ 00:00 - 19:00 ──
 function isWithinBookingHours(){
   const now=new Date()
   const total=now.getHours()*60+now.getMinutes()
   return total < 19*60
-}
-
-// ── เปลี่ยน: จองได้วันต่อวัน (รวมวันนี้ด้วย) ──
-function isDateAvailable(dateStr){
-  const today=getTodayStr()
-  return dateStr >= today
 }
 
 const R=12
@@ -139,13 +126,7 @@ const ZC={
   D:{free:'#8b4513',book:'#241208',sel:'#a06010',hov:'#a85520',extra:'#804010'},
 }
 
-function useIsMobile(){
-  const [m,setM]=useState(window.innerWidth<=768)
-  useEffect(()=>{ const fn=()=>setM(window.innerWidth<=768); window.addEventListener('resize',fn); return ()=>window.removeEventListener('resize',fn) },[])
-  return m
-}
-
-// ── Outside Hours Popup — เปลี่ยนเวลาเป็น 00:00-19:00 ──
+// ── Outside Hours Popup ──
 function OutsideHoursPopup({ onClose }){
   return (
     <div style={{position:'fixed',inset:0,zIndex:2000,background:'rgba(0,0,0,0.88)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
@@ -171,7 +152,7 @@ function OutsideHoursPopup({ onClose }){
   )
 }
 
-// ── Success Popup — เปลี่ยนข้อความหมายเหตุ ──
+// ── Success Popup ──
 function SuccessPopup({ tableName, pairName, bookingDate, bookingTime, customerName, onClose }){
   const dd=bookingDate?{
     day:parseInt(bookingDate.split('-')[2]),
@@ -233,62 +214,6 @@ function SuccessPopup({ tableName, pairName, bookingDate, bookingTime, customerN
   )
 }
 
-// ── Calendar Picker — เปลี่ยนให้จองได้ตั้งแต่วันนี้ ──
-function CalendarPicker({ date, onDate, onClose }){
-  const today=getTodayStr()
-  const initial=date?parseDateStr(date):parseDateStr(getTodayStr())
-  const [viewY,setViewY]=useState(initial.y)
-  const [viewM,setViewM]=useState(initial.m)
-  const [hov,setHov]=useState(null)
-  const daysInMonth=getDaysInMonth(viewY,viewM)
-  const firstDow=getFirstDayOfWeek(viewY,viewM)
-  const cells=[]
-  for(let i=0;i<firstDow;i++) cells.push(null)
-  for(let d=1;d<=daysInMonth;d++) cells.push(d)
-  // เปลี่ยน: วันนี้จองได้ด้วย
-  const isAvailable=(day)=>toDateStr(viewY,viewM,day)>=today
-  const prevMonth=()=>{ if(viewM===0){setViewY(y=>y-1);setViewM(11)}else setViewM(m=>m-1) }
-  const nextMonth=()=>{ if(viewM===11){setViewY(y=>y+1);setViewM(0)}else setViewM(m=>m+1) }
-  const selectedParsed=date?parseDateStr(date):null
-  return (
-    <div style={{background:'#0e0101',border:'1px solid rgba(192,57,43,0.35)',borderRadius:12,padding:16,width:290,boxShadow:'0 24px 60px rgba(0,0,0,0.95)'}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-        <button onClick={prevMonth} style={{background:'rgba(255,255,255,0.05)',border:'none',borderRadius:6,width:28,height:28,cursor:'pointer',color:'rgba(255,255,255,0.6)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>‹</button>
-        <span style={{fontSize:13,fontWeight:700,color:'rgba(255,255,255,0.85)',letterSpacing:0.5}}>{MONTH_TH_FULL[viewM]} {viewY}</span>
-        <button onClick={nextMonth} style={{background:'rgba(255,255,255,0.05)',border:'none',borderRadius:6,width:28,height:28,cursor:'pointer',color:'rgba(255,255,255,0.6)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center'}}>›</button>
-      </div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:4}}>
-        {DAY_NAMES.map(d=>(
-          <div key={d} style={{textAlign:'center',fontSize:9,fontWeight:700,padding:'2px 0',color:d==='อา'||d==='ส'?'rgba(192,57,43,0.6)':'rgba(255,255,255,0.2)'}}>{d}</div>
-        ))}
-      </div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2}}>
-        {cells.map((day,i)=>{
-          if(!day) return <div key={i}/>
-          const avail=isAvailable(day)
-          const ds=toDateStr(viewY,viewM,day)
-          const isSel=selectedParsed&&selectedParsed.y===viewY&&selectedParsed.m===viewM&&selectedParsed.d===day
-          const isHov=hov===day&&avail
-          const dow=(firstDow+day-1)%7
-          const isWeekend=dow===0||dow===6
-          return (
-            <button key={i} onClick={()=>{ if(avail){ onDate(ds); onClose() } }}
-              onMouseEnter={()=>avail&&setHov(day)} onMouseLeave={()=>setHov(null)}
-              style={{height:32,borderRadius:6,border:'none',cursor:avail?'pointer':'default',fontFamily:'inherit',background:isSel?'#c0392b':isHov?'rgba(192,57,43,0.2)':avail?'rgba(255,255,255,0.04)':'transparent',color:isSel?'#fff':avail?(isWeekend?'rgba(255,150,130,0.9)':'rgba(255,255,255,0.82)'):'rgba(255,255,255,0.15)',fontSize:12,fontWeight:isSel?700:avail?400:300,outline:isSel?'none':isHov?'1px solid rgba(192,57,43,0.4)':'none',transition:'all 0.1s',position:'relative'}}>
-              {day}
-              {avail&&!isSel&&(<span style={{position:'absolute',bottom:3,left:'50%',transform:'translateX(-50%)',width:3,height:3,borderRadius:'50%',background:'rgba(192,57,43,0.5)'}}/>)}
-            </button>
-          )
-        })}
-      </div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:12}}>
-        <div style={{fontSize:9,color:'rgba(255,255,255,0.18)',letterSpacing:0.5}}>จองได้ตั้งแต่วันนี้</div>
-        <button onClick={onClose} style={{background:'rgba(255,255,255,0.05)',border:'none',borderRadius:5,padding:'3px 10px',cursor:'pointer',color:'rgba(255,255,255,0.4)',fontSize:10,fontFamily:'inherit'}}>ปิด</button>
-      </div>
-    </div>
-  )
-}
-
 // ── Admin Popup ──
 function AdminPopup({ onSuccess, onClose }){
   const [pw,setPw]=useState('')
@@ -326,7 +251,6 @@ function AdminPopup({ onSuccess, onClose }){
 
 // ── Bottom Sheet ──
 function BottomSheet({ selected, chainTables, bookedIds, extraTables, onToggleExtra, form, onProceed, onDeselect }){
-  const isReady=form.booking_date
   return (
     <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:400,background:'#0d0000',borderTop:'1px solid rgba(192,57,43,0.3)',borderRadius:'16px 16px 0 0',padding:'14px 16px 24px',boxShadow:'0 -8px 32px rgba(0,0,0,0.7)',animation:'slideUp 0.22s ease'}}>
       <style>{`@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
@@ -340,7 +264,7 @@ function BottomSheet({ selected, chainTables, bookedIds, extraTables, onToggleEx
               <span style={{fontSize:13,fontWeight:800,color:'#f0a020',lineHeight:1}}>{selected}</span>
             </div>
             <div style={{fontSize:12,color:'rgba(255,255,255,0.5)'}}>
-              {isReady?form.booking_date:'เลือกวันที่ก่อน'}
+              {form.booking_date}
             </div>
           </div>
           {chainTables.length>0&&(
@@ -379,23 +303,19 @@ function BottomSheet({ selected, chainTables, bookedIds, extraTables, onToggleEx
 
 // ────────────────────────────
 export default function App(){
-  const isMobile=useIsMobile()
   const [bookings,setBookings]=useState([])
   const [barTables,setBarTables]=useState([])
   const [bookedIds,setBookedIds]=useState(new Set())
   const [selected,setSelected]=useState(null)
   const [extraTables,setExtraTables]=useState([])
   const [hov,setHov]=useState(null)
-  const [form,setForm]=useState({customer_name:'',phone:'',booking_date:'',people_count:''})
-  const [selectedDate,setSelectedDate]=useState('')
+  const [form,setForm]=useState({customer_name:'',phone:'',booking_date:getTodayStr(),people_count:''})
   const [step,setStep]=useState('map')
   const [admin,setAdmin]=useState(false)
   const [showAdmin,setShowAdmin]=useState(false)
   const [loading,setLoading]=useState(false)
-  const [datePanel,setDatePanel]=useState(false)
   const [showOutsideHours,setShowOutsideHours]=useState(false)
   const [successData,setSuccessData]=useState(null)
-  const datePanelRef=useRef(null)
 
   useEffect(()=>{ if(!isWithinBookingHours()) setShowOutsideHours(true) },[])
 
@@ -406,13 +326,6 @@ export default function App(){
   },[])
 
   useEffect(()=>{
-    const fn=e=>{ if(datePanelRef.current&&!datePanelRef.current.contains(e.target)) setDatePanel(false) }
-    document.addEventListener('mousedown',fn)
-    return ()=>document.removeEventListener('mousedown',fn)
-  },[])
-
-  useEffect(()=>{
-    if(!form.booking_date){ setBookedIds(new Set()); return }
     const bookingTime=getCurrentBookingTime()
     const ids=new Set(
       bookings
@@ -422,21 +335,15 @@ export default function App(){
     )
     setBookedIds(ids)
     if(selected&&ids.has(selected)) setSelected(null)
-  },[form.booking_date,bookings,barTables])
+  },[bookings,barTables])
 
   useEffect(()=>{ setExtraTables([]) },[selected])
-
-  useEffect(()=>{
-    setForm(f=>({...f,booking_date:selectedDate}))
-  },[selectedDate])
-
-
 
   const fetchBookings=async()=>{ try{ const r=await fetch(`${API_URL}/api/bookings`); setBookings(await r.json()) }catch{} }
   const fetchBarTables=async()=>{ try{ const r=await fetch(`${API_URL}/api/bar_tables`); setBarTables(await r.json()) }catch{} }
 
   const handleSubmit=async()=>{
-    if(!form.customer_name||!form.phone||!form.booking_date||!selected){ alert('กรุณากรอกข้อมูลให้ครบ'); return }
+    if(!form.customer_name||!form.phone||!selected){ alert('กรุณากรอกข้อมูลให้ครบ'); return }
     if(!isWithinBookingHours()){ setShowOutsideHours(true); return }
     setLoading(true)
     try{
@@ -465,7 +372,7 @@ export default function App(){
         customerName:form.customer_name,
       })
       fetchBookings(); setSelected(null); setExtraTables([])
-      setForm({customer_name:'',phone:'',booking_date:'',people_count:''})
+      setForm({customer_name:'',phone:'',booking_date:getTodayStr(),people_count:''})
       setStep('map')
     }catch{ alert('Server Error') }
     setLoading(false)
@@ -504,53 +411,49 @@ export default function App(){
   }
 
   const inp={width:'100%',height:46,padding:'0 14px',borderRadius:8,border:'1px solid rgba(255,255,255,0.09)',background:'rgba(255,255,255,0.04)',color:'#fff',fontSize:14,fontFamily:'inherit',boxSizing:'border-box',outline:'none',transition:'border 0.18s, background 0.18s'}
-  const dd=form.booking_date?{day:parseInt(form.booking_date.split('-')[2]),dow:getDayName(form.booking_date)}:null
 
   return (
     <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',background:'#060101',color:'#fff',fontFamily:'"Inter","Sarabun","Kanit",system-ui,sans-serif'}}>
 
       {showOutsideHours&&<OutsideHoursPopup onClose={()=>setShowOutsideHours(false)}/>}
       {successData&&<SuccessPopup tableName={successData.tableName} pairName={successData.pairName} bookingDate={successData.bookingDate} bookingTime={successData.bookingTime} customerName={successData.customerName} onClose={()=>setSuccessData(null)}/>}
-
-      <header style={{height:52,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 18px',background:'rgba(4,0,0,0.98)',borderBottom:'1px solid rgba(255,255,255,0.05)',position:'sticky',top:0,zIndex:300}}>
-        <div>
-          <div style={{fontSize:14,fontWeight:800,letterSpacing:3,color:'#d4980a',lineHeight:1.2}}>DUEM BAR</div>
-          <div style={{fontSize:7.5,letterSpacing:2.5,color:'rgba(255,255,255,0.18)',fontWeight:500}}>TABLE RESERVATION</div>
-        </div>
-        <button onClick={()=>{ if(admin){ setStep('list') }else setShowAdmin(true) }} title="Staff" style={{width:28,height:28,borderRadius:6,border:'none',cursor:'pointer',background:'rgba(255,255,255,0.04)',display:'flex',alignItems:'center',justifyContent:'center',opacity:0.35,transition:'opacity 0.2s'}} onMouseEnter={e=>e.currentTarget.style.opacity='0.8'} onMouseLeave={e=>e.currentTarget.style.opacity='0.35'}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="rgba(255,255,255,0.7)" strokeWidth="1.2"/>
-            <path d="M4.5 6V4a2.5 2.5 0 015 0v2" stroke="rgba(255,255,255,0.7)" strokeWidth="1.2" strokeLinecap="round"/>
-          </svg>
-        </button>
-      </header>
-
       {showAdmin&&<AdminPopup onSuccess={()=>{setAdmin(true);setShowAdmin(false);setStep('list')}} onClose={()=>setShowAdmin(false)}/>}
 
       {step==='map'&&(
         <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
-          <div style={{flexShrink:0,padding:'8px 14px',display:'flex',gap:8,alignItems:'center',background:'rgba(0,0,0,0.5)',borderBottom:'1px solid rgba(255,255,255,0.04)',zIndex:100}}>
-            <div ref={datePanelRef} style={{position:'relative',flex:1,maxWidth:180}}>
-              <button onClick={()=>setDatePanel(p=>!p)} style={{width:'100%',height:40,borderRadius:7,border:'none',cursor:'pointer',fontFamily:'inherit',background:form.booking_date?'rgba(192,57,43,0.18)':'rgba(255,255,255,0.04)',outline:`1px solid ${form.booking_date?'rgba(192,57,43,0.55)':datePanel?'rgba(192,57,43,0.4)':'rgba(255,255,255,0.08)'}`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1,transition:'all 0.15s'}}>
-                {dd
-                  ?<><span style={{fontSize:19,fontWeight:800,color:'#f0a020',lineHeight:1}}>{dd.day}</span><span style={{fontSize:8,color:'rgba(255,255,255,0.4)',fontWeight:600,letterSpacing:1}}>{dd.dow}</span></>
-                  :<><span style={{fontSize:11,color:'rgba(255,255,255,0.22)',fontWeight:600}}>วันที่</span><span style={{fontSize:8,color:'rgba(255,255,255,0.14)'}}>เลือกวันที่</span></>}
-              </button>
-              {datePanel&&(
-                <div style={{position:'absolute',top:'calc(100% + 6px)',left:0,zIndex:500}}>
-                  <CalendarPicker date={form.booking_date} onDate={v=>setForm({...form,booking_date:v})} onClose={()=>setDatePanel(false)}/>
-                </div>
-              )}
+
+          {/* ── Top Bar: DUEM BAR + Legend + Staff Button ── */}
+          <div style={{flexShrink:0,padding:'8px 14px',display:'flex',gap:8,alignItems:'center',justifyContent:'space-between',background:'rgba(4,0,0,0.98)',borderBottom:'1px solid rgba(255,255,255,0.05)',position:'sticky',top:0,zIndex:300}}>
+
+            {/* ซ้าย: DUEM BAR */}
+            <div style={{flexShrink:0}}>
+              <div style={{fontSize:14,fontWeight:800,letterSpacing:3,color:'#d4980a',lineHeight:1.2}}>DUEM BAR</div>
+              <div style={{fontSize:7.5,letterSpacing:2.5,color:'rgba(255,255,255,0.18)',fontWeight:500}}>TABLE RESERVATION</div>
             </div>
-            <div style={{display:'flex',gap:8,paddingLeft:4,flexShrink:0}}>
+
+            {/* กลาง: Legend */}
+            <div style={{display:'flex',gap:8,flexShrink:0}}>
               {[['#c0392b','ว่าง'],['#d4890a','เลือก'],['#b05000','ต่อโต๊ะ'],['#2a0808','จอง']].map(([c,l])=>(
                 <span key={l} style={{display:'flex',alignItems:'center',gap:4,fontSize:9,color:'rgba(255,255,255,0.25)',whiteSpace:'nowrap'}}>
                   <span style={{width:7,height:7,borderRadius:'50%',background:c,display:'inline-block'}}/>{l}
                 </span>
               ))}
             </div>
+
+            {/* ขวา: Staff Button */}
+            <button onClick={()=>{ if(admin){ setStep('list') }else setShowAdmin(true) }} title="Staff"
+              style={{width:28,height:28,borderRadius:6,border:'none',cursor:'pointer',background:'rgba(255,255,255,0.04)',display:'flex',alignItems:'center',justifyContent:'center',opacity:0.35,transition:'opacity 0.2s',flexShrink:0}}
+              onMouseEnter={e=>e.currentTarget.style.opacity='0.8'}
+              onMouseLeave={e=>e.currentTarget.style.opacity='0.35'}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="rgba(255,255,255,0.7)" strokeWidth="1.2"/>
+                <path d="M4.5 6V4a2.5 2.5 0 015 0v2" stroke="rgba(255,255,255,0.7)" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+            </button>
+
           </div>
 
+          {/* ── Map ── */}
           <div style={{flex:1,overflow:'auto',background:'#1a1008'}}>
             <div style={{display:'inline-block',padding:14}}>
               <svg width="650" height="600" style={{display:'block'}}>
@@ -666,21 +569,6 @@ export default function App(){
               </div>
             )}
 
-            {!form.booking_date&&(
-              <div style={{marginBottom:16}}>
-                <div ref={datePanelRef} style={{position:'relative'}}>
-                  <button onClick={()=>setDatePanel(p=>!p)} style={{width:'100%',height:46,borderRadius:8,border:'none',cursor:'pointer',fontFamily:'inherit',background:'rgba(255,255,255,0.04)',outline:'1px solid rgba(255,255,255,0.09)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1}}>
-                    <span style={{fontSize:12,color:'rgba(255,255,255,0.25)'}}>เลือกวันที่</span>
-                  </button>
-                  {datePanel&&(
-                    <div style={{position:'absolute',top:'calc(100% + 6px)',left:0,zIndex:500}}>
-                      <CalendarPicker date={form.booking_date} onDate={v=>setForm({...form,booking_date:v})} onClose={()=>setDatePanel(false)}/>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
               {[{k:'customer_name',ph:'ชื่อ-นามสกุล',t:'text'},{k:'phone',ph:'เบอร์โทรศัพท์',t:'tel'},{k:'people_count',ph:'จำนวนคน',t:'number'}].map(({k,ph,t})=>(
                 <input key={k} style={inp} type={t} placeholder={ph} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})}
@@ -694,7 +582,6 @@ export default function App(){
               {loading?'กำลังจอง...':'ยืนยันการจอง'}
             </button>
 
-            {/* ── หมายเหตุในฟอร์ม ── */}
             <div style={{marginTop:22,borderRadius:14,overflow:'hidden',border:'1px solid rgba(255,255,255,0.07)'}}>
               <div style={{background:'rgba(217,76,61,0.12)',padding:'12px 18px',borderBottom:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',gap:8}}>
                 <span style={{color:'#d94c3d',fontSize:15,fontWeight:800,letterSpacing:0.5}}> หมายเหตุ</span>
@@ -718,7 +605,7 @@ export default function App(){
           </div>
         </div>
       )}
-      
+
       {step==='list'&&(
         <div style={{flex:1,overflow:'auto',padding:'20px 16px'}}>
           <div style={{maxWidth:520,margin:'0 auto'}}>
